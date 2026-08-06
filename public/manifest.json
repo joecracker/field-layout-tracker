@@ -1,0 +1,16 @@
+{
+  "name": "Next Level — Field Layout Tracker",
+  "short_name": "Next Level",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#00274C",
+  "description": "Remodeling field layout tracking — draw walls, place doors/windows, takeoffs, voice notes. Works offline.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
