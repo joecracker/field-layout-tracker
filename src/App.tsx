@@ -213,6 +213,13 @@ export default function App() {
               <input type="file" id="import-file-input" accept=".json" style={{ display: 'none' }} />
             </label>
           </div>
+          <div className="section-title" style={{ marginTop: '10px' }}>☁ Google Drive Backup</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '4px' }}>
+            <button id="btn-drive-connect" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9 }}>Connect</button>
+            <button id="btn-drive-save" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9 }}>Save to Drive</button>
+          </div>
+          <button id="btn-drive-restore" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9, marginTop: '6px' }}>Restore from Drive</button>
+          <div id="drive-status" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', minHeight: '14px' }}></div>
         </section>
       </aside>
 

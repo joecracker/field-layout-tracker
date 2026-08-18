@@ -1,3 +1,5 @@
+import { driveConfigured, isDriveConnected, connectBackup, saveBackup, restoreBackup } from './lib/backup';
+
 declare global {
   interface Window {
     SpeechRecognition: any;
@@ -3236,6 +3238,61 @@ export function initNextLevel() {
 
     document.getElementById('btn-voice')?.addEventListener('click', toggleVoice);
     document.getElementById('btn-export')?.addEventListener('click', exportJSON);
+
+    function setDriveStatus(msg: string){
+      const el = document.getElementById('drive-status');
+      if(el) el.textContent = msg;
+    }
+    if(!driveConfigured){
+      setDriveStatus('Not configured (missing Client ID) — see GOOGLE_DRIVE_SETUP.md');
+    } else if(isDriveConnected()){
+      setDriveStatus('Connected to Google Drive');
+    }
+    document.getElementById('btn-drive-connect')?.addEventListener('click', async () => {
+      setDriveStatus('Connecting…');
+      try {
+        await connectBackup();
+        setDriveStatus('Connected to Google Drive');
+        toast('Connected to Google Drive');
+      } catch(err){
+        setDriveStatus(err instanceof Error ? err.message : 'Connect failed');
+      }
+    });
+    document.getElementById('btn-drive-save')?.addEventListener('click', async () => {
+      setDriveStatus('Saving…');
+      try {
+        await saveBackup(projects);
+        setDriveStatus('Saved to Google Drive just now');
+        toast('Saved to Google Drive');
+      } catch(err){
+        setDriveStatus(err instanceof Error ? err.message : 'Save failed');
+      }
+    });
+    document.getElementById('btn-drive-restore')?.addEventListener('click', async () => {
+      setDriveStatus('Checking Drive…');
+      try {
+        const data = await restoreBackup<Project[]>();
+        if(!data || !Array.isArray(data) || data.length === 0){
+          setDriveStatus('No backup found in Drive yet — save one first');
+          return;
+        }
+        if(!window.confirm('Restore from Google Drive? This will replace all projects currently on this device.')) {
+          setDriveStatus('Restore cancelled');
+          return;
+        }
+        projects = data;
+        if(projects.length > 0){
+          currentProjectId = projects[0].id;
+          currentPageIdx = 0;
+        }
+        saveAndRender();
+        renderSidebar();
+        setDriveStatus('Restored from Google Drive');
+        toast('Restored from Google Drive');
+      } catch(err){
+        setDriveStatus(err instanceof Error ? err.message : 'Restore failed');
+      }
+    });
 
     window.addEventListener('online', updateConnStatus);
     window.addEventListener('offline', updateConnStatus);
