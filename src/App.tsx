@@ -202,6 +202,7 @@ export default function App() {
               <input type="file" id="photo-file-input" accept="image/*" capture="environment" style={{ display: 'none' }} />
             </label>
             <div id="photo-gallery" className="photo-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginTop: '8px' }}></div>
+            <div id="storage-meter" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '8px', textAlign: 'center' }}></div>
           </div>
         </section>
         <section className="sidebar-section">

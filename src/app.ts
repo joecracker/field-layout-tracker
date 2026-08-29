@@ -1,4 +1,8 @@
 import { driveConfigured, isDriveConnected, connectBackup, saveBackup, restoreBackup } from './lib/backup';
+import {
+  putPhoto, deletePhotoBlob, getDisplayURL, downscaleImage,
+  dehydrateProjects, hydrateProjects, estimateStorage,
+} from './lib/photoStore';
 
 declare global {
   interface Window {
@@ -70,7 +74,7 @@ export function initNextLevel() {
   }
   interface Photo {
     id: string;
-    dataUrl: string;
+    dataUrl?: string; // transient only: set while hydrating for export/Drive, or as private-mode fallback. Bytes live in IndexedDB keyed by id.
     caption: string;
     timestamp: string;
   }
@@ -2235,10 +2239,12 @@ export function initNextLevel() {
       const card = document.createElement('div');
       card.className = 'photo-card';
       card.innerHTML = `
-        <img src="${photo.dataUrl}" class="photo-thumb" alt="Photo" />
+        <img class="photo-thumb" alt="Photo" />
         <input type="text" class="photo-caption-input" value="${photo.caption || ''}" placeholder="Add caption..." data-id="${photo.id}" />
         <button class="photo-delete" data-id="${photo.id}" title="Delete">&times;</button>
       `;
+      const img = card.querySelector('.photo-thumb') as HTMLImageElement;
+      getDisplayURL(photo).then(url => { if (url && img) img.src = url; });
       card.querySelector('.photo-caption-input')?.addEventListener('input', (e)=>{
         const val = (e.target as HTMLInputElement).value;
         photo.caption = val;
@@ -2246,14 +2252,29 @@ export function initNextLevel() {
       });
       card.querySelector('.photo-delete')?.addEventListener('click', ()=>{
         p.photos = p.photos.filter(x => x.id !== photo.id);
+        deletePhotoBlob(photo.id);
         save();
         renderPhotoGallery();
+        updateStorageMeter();
       });
       gallery.appendChild(card);
     });
+    updateStorageMeter();
   }
 
-  function openBossReportModal(){
+  async function updateStorageMeter(){
+    const el = document.getElementById('storage-meter');
+    if(!el) return;
+    const est = await estimateStorage();
+    let jobs = 0, photos = 0;
+    projects.forEach(pr => { jobs++; photos += (pr.photos ? pr.photos.length : 0); });
+    const usage = est ? `${est.usedMB.toFixed(0)} MB used${est.quotaMB ? ` of ~${est.quotaMB.toFixed(0)} MB` : ''}` : 'usage n/a';
+    el.textContent = `🗄️ ${jobs} job${jobs===1?'':'s'} • ${photos} photo${photos===1?'':'s'} • ${usage}`;
+    if(est && est.pct > 80) el.style.color = '#f87171';
+    else el.style.color = 'rgba(255,255,255,0.5)';
+  }
+
+  async function openBossReportModal(){
     const p = getProject();
     if(!p) { toast('No project selected'); return; }
     const modal = document.getElementById('boss-report-modal');
@@ -2367,14 +2388,15 @@ export function initNextLevel() {
       html += `<p style="font-size: 13px; color: #6b7280; font-style: italic;">No photo attachments recorded.</p>`;
     } else {
       html += `<div class="report-photos-grid">`;
-      p.photos.forEach(ph => {
+      for(const ph of p.photos){
+        const url = await getDisplayURL(ph);
         html += `
           <div class="report-photo-item">
-            <img src="${ph.dataUrl}" class="report-photo-img" alt="Photo" />
+            <img src="${url || ''}" class="report-photo-img" alt="Photo" />
             <div class="report-photo-cap">${ph.caption || 'No caption'} <span style="font-size: 10px; color: #9ca3af; display: block;">${ph.timestamp}</span></div>
           </div>
         `;
-      });
+      }
       html += `</div>`;
     }
 
@@ -2840,27 +2862,35 @@ export function initNextLevel() {
 
     const photoInput = document.getElementById('photo-file-input') as HTMLInputElement;
     if(photoInput){
-      photoInput.addEventListener('change', e => {
+      photoInput.addEventListener('change', async e => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if(!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-          const dataUrl = ev.target?.result as string;
-          const p = getProject();
-          if(!p) return;
-          if(!p.photos) p.photos = [];
-          p.photos.push({
-            id: uid(),
-            dataUrl,
-            caption: '',
-            timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-          });
-          save();
-          renderPhotoGallery();
-          photoInput.value = '';
-          toast('Photo added');
+        const p = getProject();
+        if(!p) return;
+        if(!p.photos) p.photos = [];
+        const id = uid();
+        const photo: Photo = {
+          id,
+          caption: '',
+          timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
         };
-        reader.readAsDataURL(file);
+        try {
+          const blob = await downscaleImage(file);
+          await putPhoto(id, blob);            // bytes -> IndexedDB
+        } catch {
+          // IndexedDB unavailable (e.g. private mode): fall back to inline dataUrl.
+          try {
+            const blob = await downscaleImage(file);
+            photo.dataUrl = await new Promise<string>((res, rej) => {
+              const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = () => rej(r.error); r.readAsDataURL(blob);
+            });
+          } catch { toast('Could not read photo'); return; }
+        }
+        p.photos.push(photo);
+        save();
+        renderPhotoGallery();
+        photoInput.value = '';
+        toast('Photo added');
       });
     }
 
@@ -2978,7 +3008,7 @@ export function initNextLevel() {
         const file = (e.target as HTMLInputElement).files?.[0];
         if(!file) return;
         const reader = new FileReader();
-        reader.onload = ev => {
+        reader.onload = async ev => {
           try {
             const jsonText = ev.target?.result as string;
             const imported = JSON.parse(jsonText);
@@ -2987,11 +3017,13 @@ export function initNextLevel() {
             } else if(imported && typeof imported === 'object'){
               projects.push(imported);
             }
+            await dehydrateProjects(projects); // move any embedded photo bytes into IndexedDB
             if(projects.length > 0){
               currentProjectId = projects[projects.length - 1].id;
               currentPageIdx = 0;
             }
             saveAndRender();
+            updateStorageMeter();
             toast('Project imported successfully');
           } catch(err){
             toast('Invalid project file');
@@ -3261,7 +3293,8 @@ export function initNextLevel() {
     document.getElementById('btn-drive-save')?.addEventListener('click', async () => {
       setDriveStatus('Saving…');
       try {
-        await saveBackup(projects);
+        const hydrated = await hydrateProjects(projects); // include photo bytes in the backup
+        await saveBackup(hydrated);
         setDriveStatus('Saved to Google Drive just now');
         toast('Saved to Google Drive');
       } catch(err){
@@ -3281,12 +3314,14 @@ export function initNextLevel() {
           return;
         }
         projects = data;
+        await dehydrateProjects(projects); // move restored photo bytes into IndexedDB
         if(projects.length > 0){
           currentProjectId = projects[0].id;
           currentPageIdx = 0;
         }
         saveAndRender();
         renderSidebar();
+        updateStorageMeter();
         setDriveStatus('Restored from Google Drive');
         toast('Restored from Google Drive');
       } catch(err){
@@ -4193,8 +4228,9 @@ export function initNextLevel() {
   /* ════════════════════════════════════════════════════════════════
      EXPORT
      ════════════════════════════════════════════════════════════════ */
-  function exportJSON(){
-    const data = JSON.stringify(projects, null, 2);
+  async function exportJSON(){
+    const hydrated = await hydrateProjects(projects); // re-attach photo bytes so the file is self-contained
+    const data = JSON.stringify(hydrated, null, 2);
     const blob = new Blob([data], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -4234,6 +4270,14 @@ export function initNextLevel() {
       pg.history = pg.history || [];
       pg.historyIdx = pg.historyIdx ?? -1;
     });
+  });
+
+  // One-time migration: move any legacy inline base64 photos into IndexedDB,
+  // then persist the now-light projects JSON. Fire-and-forget — photos keep
+  // showing via their inline dataUrl until their blob lands.
+  dehydrateProjects(projects).then(n => {
+    if(n > 0){ save(); renderPhotoGallery(); }
+    updateStorageMeter();
   });
 
   if(projects.length > 0){
