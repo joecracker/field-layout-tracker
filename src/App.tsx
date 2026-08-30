@@ -217,6 +217,11 @@ export default function App() {
         </section>
         <section className="sidebar-section">
           <button id="btn-export-boss" className="btn btn-block btn-accent" style={{ background: '#2563eb', color: '#fff', marginBottom: '6px' }}>📋 Send to Laptop (Boss Report)</button>
+          <div className="btn-row" style={{ marginTop: '6px' }}>
+            <button id="btn-send-job" className="btn btn-sm btn-block" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Send this one job — walls, photos, notes, everything — to someone else, by text/email/AirDrop/whatever's easiest">📤 Send This Job</button>
+            <button id="btn-open-job" className="btn btn-sm btn-block" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Got a job file someone sent you? Open it here">📥 Open a Job</button>
+            <input type="file" id="job-file-input" accept=".json,application/json" style={{ display: 'none' }} />
+          </div>
           <div className="section-title" style={{ marginTop: '10px' }}>☁ Google Drive Backup</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '4px' }}>
             <button id="btn-drive-connect" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9 }}>Connect</button>
@@ -232,7 +237,7 @@ export default function App() {
       <main id="main-area">
         <div id="toolbar">
           <div className="toolbar-left">
-            <button id="btn-toggle-sidebar" className="btn btn-sm toolbar-btn" title="Toggle Sidebar">&#8249;</button>
+            <button id="btn-toggle-sidebar" className="btn btn-sm toolbar-btn" title="Toggle Sidebar" style={{ fontSize: '26px', lineHeight: '1', fontWeight: 700 }}>&#8249;</button>
             <button id="btn-toolbar-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '2px 8px', fontSize: '11px' }}>🪄 Project Wizard</button>
             <span id="toolbar-info">New project</span>
           </div>
@@ -641,8 +646,8 @@ export default function App() {
           </div>
           <p className="modal-sub" style={{ flex: 'none' }}>Jump straight to a job's canvas, or start a blank one</p>
           <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 'none' }}>
-            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '14px 8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ 🛁 New Bathroom</button>
-            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '14px 8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ 🍳 New Kitchen</button>
+            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ Bath</button>
+            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ Kitchen</button>
           </div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
           <div id="skip-existing-jobs-list" style={{ flex: 1, overflowY: 'auto', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}></div>

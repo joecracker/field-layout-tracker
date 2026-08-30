@@ -2813,7 +2813,8 @@ export function initNextLevel() {
       listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:14px 0;">No jobs yet — start one above</div>';
       return;
     }
-    projects.forEach(p => {
+    const sorted = [...projects].sort((a, b) => a.name.localeCompare(b.name));
+    sorted.forEach(p => {
       const photoCount = p.photos?.length || 0;
       const noteCount = p.pages.reduce((sum, pg) => sum + (pg.notes?.length || 0), 0);
       const row = document.createElement('button');
@@ -2952,6 +2953,16 @@ export function initNextLevel() {
       save(); toast('Saved');
     });
     document.getElementById('project-search')?.addEventListener('input', ()=> renderSidebar());
+
+    document.getElementById('btn-send-job')?.addEventListener('click', sendCurrentJob);
+    document.getElementById('btn-open-job')?.addEventListener('click', ()=>{
+      document.getElementById('job-file-input')?.click();
+    });
+    document.getElementById('job-file-input')?.addEventListener('change', e=>{
+      const file = (e.target as HTMLInputElement).files?.[0];
+      (e.target as HTMLInputElement).value = '';
+      if(file) openJobFile(file);
+    });
 
     document.getElementById('btn-add-page')?.addEventListener('click', ()=>{
       const p = getProject(); if(!p) return;
@@ -4555,6 +4566,68 @@ export function initNextLevel() {
     a.href = url; a.download = 'nextlevel_projects.json';
     a.click(); URL.revokeObjectURL(url);
     toast('Exported');
+  }
+
+  // ── Send / Open a single job ──────────────────────────────────────────
+  // The field-guy-to-sales-guy handoff: package ONE job (not the whole
+  // project list) into a file named after the job itself, and hand it off
+  // through the device's own share sheet (text/email/AirDrop/whatever) —
+  // no accounts, no server, no "JSON" anywhere in the UI. Under the hood
+  // it's still a small data file — that part doesn't change — but nothing
+  // about how it's presented looks like a developer export tool.
+  async function sendCurrentJob(){
+    const p = getProject();
+    if(!p){ toast('No job selected'); return; }
+    toast('Packing up the job…');
+    let hydrated;
+    try {
+      hydrated = (await hydrateProjects([p]))[0]; // pull photo bytes in so the file is self-contained
+    } catch {
+      toast('Could not prepare the job file'); return;
+    }
+    const envelope = { type: 'nextlevel-job', version: 1, project: hydrated };
+    const json = JSON.stringify(envelope);
+    const safeName = (p.name || 'Job').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'Job';
+    const filename = `${safeName}.json`;
+    const file = new File([json], filename, { type: 'application/json' });
+
+    // Prefer the device's native share sheet (text/email/AirDrop/etc) when available.
+    const nav = navigator as any;
+    if(nav.canShare && nav.canShare({ files: [file] })){
+      try {
+        await nav.share({ files: [file], title: p.name, text: `Job: ${p.name}` });
+        toast('Sent!');
+        return;
+      } catch(err: any) {
+        if(err?.name === 'AbortError') return; // they backed out of the share sheet — not an error
+        // any other failure: fall through to the download fallback below
+      }
+    }
+    // Fallback (desktop / unsupported browsers): plain download, attach it themselves.
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Downloaded — attach it to your email or text');
+  }
+
+  async function openJobFile(file: File){
+    let text: string;
+    try { text = await file.text(); } catch { toast('Could not read that file'); return; }
+    let parsed: any;
+    try { parsed = JSON.parse(text); } catch { toast("That doesn't look like a job file"); return; }
+    const incoming = parsed?.type === 'nextlevel-job' ? parsed.project : null;
+    if(!incoming || !incoming.pages){ toast("That doesn't look like a job file"); return; }
+    incoming.id = uid(); // always lands as a NEW entry — never silently overwrites an existing job
+    try {
+      await dehydrateProjects([incoming]); // pulls inline photo bytes into IndexedDB, strips them
+    } catch { /* private mode etc — leave photos inline, they'll still show */ }
+    projects.push(incoming);
+    currentProjectId = incoming.id;
+    currentPageIdx = 0;
+    pushHistory(); save(); renderSidebar(); render();
+    toast(`📥 Job in! "${incoming.name}" added to your list`);
   }
 
   /* ════════════════════════════════════════════════════════════════
