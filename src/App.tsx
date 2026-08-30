@@ -649,10 +649,10 @@ export default function App() {
           </div>
           <p className="modal-sub" style={{ flex: 'none' }}>Jump straight to a job's canvas, or start a blank one</p>
           <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 'none' }}>
-            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ Bath</button>
-            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ Kitchen</button>
+            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Bath</button>
+            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Kitchen</button>
           </div>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
           <div id="skip-existing-jobs-list" style={{ flex: 1, overflowY: 'auto', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}></div>
         </div>
       </div>

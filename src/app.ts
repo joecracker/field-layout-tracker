@@ -2825,7 +2825,7 @@ export function initNextLevel() {
     if (!listEl) return;
     listEl.innerHTML = '';
     if (projects.length === 0) {
-      listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:14px 0;">No jobs yet — start one above</div>';
+      listEl.innerHTML = '<div style="font-size:12px;color:#64748b;text-align:center;padding:14px 0;">No jobs yet — start one above</div>';
       return;
     }
     const sorted = [...projects].sort((a, b) => a.name.localeCompare(b.name));
@@ -2834,11 +2834,11 @@ export function initNextLevel() {
       const noteCount = p.pages.reduce((sum, pg) => sum + (pg.notes?.length || 0), 0);
       const row = document.createElement('button');
       row.className = 'skip-existing-job-row';
-      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;width:100%;padding:10px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#fff;cursor:pointer;';
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;width:100%;padding:10px;border-radius:8px;background:#f8fafc;border:1px solid var(--border);color:#1e293b;cursor:pointer;';
       row.innerHTML = `
         <div style="min-width:0;">
           <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">${p.category} &middot; ${photoCount} photo${photoCount === 1 ? '' : 's'} &middot; ${noteCount} note${noteCount === 1 ? '' : 's'}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">${p.category} &middot; ${photoCount} photo${photoCount === 1 ? '' : 's'} &middot; ${noteCount} note${noteCount === 1 ? '' : 's'}</div>
         </div>
         <span style="opacity:0.5;flex:none;">&rsaquo;</span>
       `;
