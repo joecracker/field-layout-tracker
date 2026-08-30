@@ -1,6 +1,0 @@
-{
-  "name": "Next Level — Field Layout Tracker",
-  "description": "Remodeling field layout tracking app — draw walls, place doors and windows, calculate takeoffs, record voice notes, and export project layout files.",
-  "requestFramePermissions": ["microphone", "camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
