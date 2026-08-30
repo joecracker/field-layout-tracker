@@ -81,6 +81,22 @@ export async function deletePhotoBlob(id: string): Promise<void> {
   } catch { /* ignore — blob may never have been stored */ }
 }
 
+/* Wipes every stored photo blob — used by the app-wide "Clear All Data"
+   reset. Clears the object store rather than deleting the whole DB so an
+   open connection elsewhere doesn't get orphaned mid-transaction. */
+export async function clearAllPhotos(): Promise<void> {
+  try {
+    const store = await tx('readwrite');
+    await new Promise<void>((resolve, reject) => {
+      const r = store.clear();
+      r.onsuccess = () => resolve();
+      r.onerror = () => reject(r.error);
+    });
+  } catch { /* ignore */ }
+  urlCache.forEach((_, id) => revokeURL(id));
+  urlCache.clear();
+}
+
 /* ── object-URL cache (one live URL per photo id; reused across renders) ── */
 
 const urlCache = new Map<string, string>();
