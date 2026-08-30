@@ -1,7 +1,7 @@
 import { driveConfigured, isDriveConnected, connectBackup, saveBackup, restoreBackup } from './lib/backup';
 import {
   putPhoto, deletePhotoBlob, getDisplayURL, getPhotoBlob, downscaleImage,
-  dehydrateProjects, hydrateProjects, estimateStorage, revokeURL,
+  dehydrateProjects, hydrateProjects, estimateStorage, revokeURL, clearAllPhotos,
 } from './lib/photoStore';
 import { openPhotoBooth } from './lib/photoBooth';
 import { openPhotoViewer } from './lib/photoViewer';
@@ -3671,6 +3671,21 @@ export function initNextLevel() {
       } catch(err){
         setDriveStatus(err instanceof Error ? err.message : 'Restore failed');
       }
+    });
+
+    document.getElementById('btn-clear-all-data')?.addEventListener('click', async () => {
+      if(!window.confirm(`Erase EVERYTHING? This deletes all ${projects.length} project(s) — every wall, photo, and note on this device. Not just the current job.`)) return;
+      if(!window.confirm('Really sure? This cannot be undone.')) return;
+
+      projects = [];
+      currentProjectId = null;
+      currentPageIdx = 0;
+      save();
+      await clearAllPhotos();
+      updateStorageMeter();
+      renderSidebar();
+      render();
+      toast('🗑 All data cleared — starting fresh');
     });
 
     window.addEventListener('online', updateConnStatus);

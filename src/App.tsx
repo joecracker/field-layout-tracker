@@ -229,6 +229,9 @@ export default function App() {
           </div>
           <button id="btn-drive-restore" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9, marginTop: '6px' }}>Restore from Drive</button>
           <div id="drive-status" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', minHeight: '14px' }}></div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: '14px', paddingTop: '10px' }}>
+            <button id="btn-clear-all-data" className="btn btn-sm btn-block" style={{ background: 'rgba(220,38,38,0.15)', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.4)' }} title="Wipe every project and photo — for starting over clean, e.g. after testing">🗑 Clear All Data</button>
+          </div>
         </section>
       </aside>
 
