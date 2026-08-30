@@ -2054,6 +2054,7 @@ export function initNextLevel() {
         li.addEventListener('click', (e)=>{
           const target = e.target as HTMLElement;
           if(target.classList.contains('del-project')){
+            if(!window.confirm(`Delete "${pr.name}"? This removes the whole job — walls, photos, notes, everything. Can't be undone.`)) return;
             projects = projects.filter(x=>x.id!==pr.id);
             if(currentProjectId===pr.id){ currentProjectId=projects[0]?.id||null; currentPageIdx=0; }
             save(); renderSidebar(); render(); return;
@@ -4689,16 +4690,11 @@ export function initNextLevel() {
     currentProjectId = projects[0].id;
     currentPageIdx = 0;
     pushHistory();
-  } else {
-    // Create default starter project if empty
-    const defaultProj = newProject('Sample Kitchen Remodel', 'Kitchen');
-    defaultProj.customer = 'John Doe';
-    projects.push(defaultProj);
-    currentProjectId = defaultProj.id;
-    currentPageIdx = 0;
-    save();
-    pushHistory();
   }
+  // else: genuinely empty — no fake seed project. currentProjectId stays
+  // null and Skip to Drawing / Wizard become the actual first move, instead
+  // of forcing everyone to first delete a "Sample Kitchen Remodel / John
+  // Doe" placeholder that was never theirs.
 
   initEvents();
   renderSidebar();
