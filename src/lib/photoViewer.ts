@@ -24,7 +24,7 @@ export interface PhotoViewerOptions {
 
 const MIN_SIZE = 130;
 const MAX_SIZE = 640;
-const DEFAULT_LONG_EDGE = 260;
+const DEFAULT_LONG_EDGE = 320;
 
 let injected = false;
 let currentObjectURL: string | null = null;
@@ -132,7 +132,12 @@ function ensureBuilt() {
   const resizeHandle = win.querySelector('#pv-resize') as HTMLDivElement;
 
   // ── drag (header) + pinch (anywhere on the window) via unified pointer map ──
+  // IMPORTANT: if the pointerdown started on a button, bail out before doing
+  // anything — otherwise setPointerCapture() below hijacks the whole
+  // pointerdown/up sequence and the browser never fires a real 'click' on
+  // the button underneath. This was silently eating the +/- and header taps.
   const onPointerDown = (e: PointerEvent, fromHeader: boolean) => {
+    if ((e.target as HTMLElement).closest('button')) return;
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (activePointers.size === 1 && fromHeader) {
