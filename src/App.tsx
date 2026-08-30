@@ -25,7 +25,6 @@ export default function App() {
           <input type="text" id="customer-address" placeholder="Job Site Address" autoComplete="off" style={{ marginTop: '6px' }} />
           <div className="btn-row" style={{ marginTop: '6px' }}>
             <button id="btn-open-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none' }}>🪄 Wizard</button>
-            <button id="btn-new-project" className="btn btn-sm">+ Quick</button>
             <button id="btn-save-project" className="btn btn-sm">Save</button>
           </div>
           <div className="project-search-wrap">
@@ -41,6 +40,8 @@ export default function App() {
           <div id="pages-drawer-content" className="hidden" style={{ marginTop: '8px' }}>
             <div id="page-tabs" className="page-tabs"></div>
             <button id="btn-add-page" className="btn btn-sm btn-accent btn-block" style={{ marginTop: '6px' }}>+ Add Page</button>
+            <button id="btn-duplicate-page" className="btn btn-sm btn-block" style={{ marginTop: '6px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Copies the current page's walls, doors &amp; windows into a new page — handy for a same-room, different-trade page (e.g. Plumbing → Electrical) without redrawing the outline">⧉ Duplicate Current Page</button>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginTop: '4px' }}>Double-tap a page tab to rename it</div>
           </div>
         </section>
         <section className="sidebar-section">
@@ -231,7 +232,7 @@ export default function App() {
       <main id="main-area">
         <div id="toolbar">
           <div className="toolbar-left">
-            <button id="btn-toggle-sidebar" className="btn btn-sm toolbar-btn" title="Toggle Sidebar">&#9776;</button>
+            <button id="btn-toggle-sidebar" className="btn btn-sm toolbar-btn" title="Toggle Sidebar">&#8249;</button>
             <button id="btn-toolbar-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '2px 8px', fontSize: '11px' }}>🪄 Project Wizard</button>
             <span id="toolbar-info">New project</span>
           </div>
@@ -255,10 +256,10 @@ export default function App() {
         </div>
         <div id="canvas-wrap">
           <canvas id="floorplan"></canvas>
-          <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--blue,#1e3a8a)', color: '#fff', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>📌</button>
+          <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--blue,#1e3a8a)', color: '#fff', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>🔖</button>
           <div id="reference-rail" className="hidden" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '280px', maxWidth: '85vw', background: 'rgba(20,20,26,0.97)', zIndex: 65, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 16px rgba(0,0,0,0.35)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.15)', flex: 'none' }}>
-              <span style={{ fontWeight: 700, color: '#fff', fontSize: '13px' }}>📌 Reference</span>
+              <span style={{ fontWeight: 700, color: '#fff', fontSize: '13px' }}>🔖 Reference</span>
               <button id="reference-rail-close" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#fff' }}>&times;</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
@@ -519,7 +520,7 @@ export default function App() {
               <p>When you start a job on site, choose your preferred setup mode:</p>
               <ul>
                 <li><b>🪄 Project Wizard:</b> Step-by-step guided setup that asks for Client Name, Phone Number, Email Address, Job Site Address, Project Room Title, Category, Ceiling Height, and Stud Spacing. Auto-tailors your canvas and catalogs!</li>
-                <li><b>+ Quick:</b> Instant single-tap project creation for rapid on-the-fly sketching.</li>
+                <li><b>✏️ Skip to Drawing:</b> Jump straight to an existing job's canvas (skip hunting the project list), or start a blank Bathroom/Kitchen with no client info needed.</li>
                 <li><b>Sidebar Contact Info:</b> Enter or update complete contact info (Name, Phone, Email, and Address) anytime directly in the left sidebar.</li>
               </ul>
             </div>
@@ -633,16 +634,18 @@ export default function App() {
       </div>
 
       <div id="skip-category-modal" className="modal-overlay hidden">
-        <div className="modal" style={{ maxWidth: '380px', width: '90%' }}>
-          <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="modal" style={{ maxWidth: '420px', width: '90%', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 'none' }}>
             <span>✏️ Skip to Drawing</span>
             <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
-          <p className="modal-sub">What are we drawing?</p>
-          <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
-            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>🛁 Bathroom</button>
-            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>🍳 Kitchen</button>
+          <p className="modal-sub" style={{ flex: 'none' }}>Jump straight to a job's canvas, or start a blank one</p>
+          <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 'none' }}>
+            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '14px 8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ 🛁 New Bathroom</button>
+            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '14px 8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>+ 🍳 New Kitchen</button>
           </div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
+          <div id="skip-existing-jobs-list" style={{ flex: 1, overflowY: 'auto', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}></div>
         </div>
       </div>
 

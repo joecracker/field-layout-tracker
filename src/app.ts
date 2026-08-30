@@ -2024,6 +2024,15 @@ export function initNextLevel() {
      ════════════════════════════════════════════════════════════════ */
   function renderSidebar(){
     const p = getProject();
+    // Whatever project is actually loaded is the source of truth for its
+    // category/scope — these two globals used to only get set when a project
+    // was CREATED (wizard/skip-to-drawing), never when you switched to an
+    // EXISTING one. That's why the Category/Scope pills could show "Kitchen"
+    // highlighted while a Bathroom project was the one actually open.
+    if(p){
+      currentCategory = p.category || 'Kitchen';
+      currentScope = p.scope || currentScope;
+    }
     const custInput = document.getElementById('customer-name') as HTMLInputElement;
     if (custInput) custInput.value = p ? p.customer || p.name : '';
     const phoneInput = document.getElementById('customer-phone') as HTMLInputElement;
@@ -2067,12 +2076,15 @@ export function initNextLevel() {
         p.pages.forEach((pg,i)=>{
           const tab = document.createElement('div');
           tab.className = 'page-tab' + (i===currentPageIdx ? ' active' : '');
-          tab.innerHTML = '<span>'+pg.name+'</span>' + (p.pages.length>1 ? '<span class="close-tab" data-i="'+i+'">&times;</span>' : '');
+          tab.title = 'Tap to switch — double-tap to rename';
+          tab.innerHTML = '<span>'+pg.name+'</span>' + (p.pages.length>1 ? '<span class="close-tab" data-i="'+i+'" title="Delete page">&times;</span>' : '');
           tab.addEventListener('click',(e)=>{
             const target = e.target as HTMLElement;
             if(target.classList.contains('close-tab')){
               const idx=parseInt(target.dataset.i || '0');
               if(p.pages.length<=1) return;
+              const victim = p.pages[idx];
+              if(!window.confirm(`Delete page "${victim.name}"? This removes everything drawn on it — walls, doors, assets, notes. Can't be undone.`)) return;
               p.pages.splice(idx,1);
               if(currentPageIdx>=p.pages.length) currentPageIdx=p.pages.length-1;
               selectedWallIdx=-1; pushHistory(); save(); renderSidebar(); render(); return;
@@ -2083,6 +2095,13 @@ export function initNextLevel() {
             hideOpeningEdit();
             closeMobileSidebar();
             renderSidebar(); render();
+          });
+          tab.addEventListener('dblclick', ()=>{
+            const newName = prompt('Rename page:', pg.name);
+            if(newName && newName.trim()){
+              pg.name = newName.trim();
+              save(); renderSidebar();
+            }
           });
           tabs.appendChild(tab);
         });
@@ -2574,6 +2593,11 @@ export function initNextLevel() {
       sb.classList.add('collapsed');
       overlay?.classList.add('hidden');
     }
+    // Chevron points the direction the NEXT tap will do: ‹ (tucks the panel
+    // away) while open, › (brings it back) while collapsed — clearer than a
+    // static hamburger for something that's purely an in/out toggle.
+    const toggleBtn = document.getElementById('btn-toggle-sidebar');
+    if (toggleBtn) toggleBtn.innerHTML = shouldOpen ? '&#8249;' : '&#8250;';
     setTimeout(resizeCanvas, 260);
   }
 
@@ -2728,6 +2752,31 @@ export function initNextLevel() {
     toast(`🎉 "${projTitle}" created for ${custName}!`);
   }
 
+  // Shared "arrive at the drawing desk" landing sequence — used by both a
+  // brand-new blank project (needs the tools/catalog open, nothing in the
+  // rail yet) and jumping to an EXISTING job (skip the tool-drawer forcing,
+  // but open the reference rail since that's the whole point — the info's
+  // already there, waiting).
+  function landOnDrawingDesk(opts: { openTools?: boolean; openRail?: boolean }) {
+    pushHistory();
+    save();
+    renderSidebar();
+    render();
+    if (opts.openTools) {
+      const openIfClosed = (contentId: string, btnId: string) => {
+        const content = document.getElementById(contentId);
+        if (content?.classList.contains('hidden')) (document.getElementById(btnId) as HTMLElement)?.click();
+      };
+      openIfClosed('tools-drawer-content', 'btn-tools-drawer');
+      openIfClosed('assets-drawer-content', 'btn-assets-drawer');
+    }
+    closeMobileSidebar(); // on phone/small tablet, drop the sidebar so the canvas is front and center
+    if (opts.openRail) {
+      document.getElementById('reference-rail')?.classList.remove('hidden');
+      renderReferenceRail();
+    }
+  }
+
   // Bypasses the whole intro/wizard: pick a category → blank project →
   // straight to canvas with the drawing tools and matching catalog already
   // open. Built for anyone (kitchen designer, or bath-focused you/boss) who's
@@ -2745,14 +2794,63 @@ export function initNextLevel() {
   };
 
   function openSkipCategoryModal() {
+    renderSkipExistingJobsList();
     document.getElementById('skip-category-modal')?.classList.remove('hidden');
   }
   function closeSkipCategoryModal() {
     document.getElementById('skip-category-modal')?.classList.add('hidden');
   }
 
+  // The "Or jump to an existing job" list inside the Skip to Drawing popup —
+  // this is the desk-side use case: you already collected a couple jobs in
+  // the field (notes/photos/measurements are already there), you just don't
+  // want to hunt through the sidebar list to find the right one.
+  function renderSkipExistingJobsList() {
+    const listEl = document.getElementById('skip-existing-jobs-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    if (projects.length === 0) {
+      listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:14px 0;">No jobs yet — start one above</div>';
+      return;
+    }
+    projects.forEach(p => {
+      const photoCount = p.photos?.length || 0;
+      const noteCount = p.pages.reduce((sum, pg) => sum + (pg.notes?.length || 0), 0);
+      const row = document.createElement('button');
+      row.className = 'skip-existing-job-row';
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;width:100%;padding:10px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#fff;cursor:pointer;';
+      row.innerHTML = `
+        <div style="min-width:0;">
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">${p.category} &middot; ${photoCount} photo${photoCount === 1 ? '' : 's'} &middot; ${noteCount} note${noteCount === 1 ? '' : 's'}</div>
+        </div>
+        <span style="opacity:0.5;flex:none;">&rsaquo;</span>
+      `;
+      row.addEventListener('click', () => jumpToExistingJob(p.id));
+      listEl.appendChild(row);
+    });
+  }
+
+  // Land on an existing job's canvas — same reset the sidebar project-list
+  // click does (deselect wall/opening, close mobile sidebar) — with the
+  // reference rail already open since that's the whole point of this path.
+  function jumpToExistingJob(id: string) {
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    currentProjectId = p.id;
+    currentPageIdx = 0;
+    selectedWallIdx = -1;
+    document.getElementById('wall-edit-panel')?.classList.add('hidden');
+    selectedOpening = null;
+    hideOpeningEdit();
+    closeSkipCategoryModal();
+    landOnDrawingDesk({ openTools: false, openRail: true });
+    toast(`📂 ${p.name}`);
+  }
+
   function skipToDrawing(category: string) {
-    const p = newProject('New Project', category);
+    const stamp = new Date().toLocaleDateString([], { month: 'numeric', day: 'numeric' });
+    const p = newProject(`New ${category} — ${stamp}`, category);
     currentCategory = category;
     activeAssetCat = CATEGORY_ASSET_MAP[category] || 'cabinet';
 
@@ -2760,18 +2858,7 @@ export function initNextLevel() {
     currentProjectId = p.id;
     currentPageIdx = 0;
 
-    pushHistory();
-    save();
-    renderSidebar();
-    render();
-
-    const openIfClosed = (contentId: string, btnId: string) => {
-      const content = document.getElementById(contentId);
-      if (content?.classList.contains('hidden')) (document.getElementById(btnId) as HTMLElement)?.click();
-    };
-    openIfClosed('tools-drawer-content', 'btn-tools-drawer');
-    openIfClosed('assets-drawer-content', 'btn-assets-drawer');
-    closeMobileSidebar(); // on phone/small tablet, drop the sidebar so the canvas is front and center
+    landOnDrawingDesk({ openTools: true, openRail: false });
     toast(`🎨 Blank ${category} project ready — start drawing`);
   }
 
@@ -2789,9 +2876,6 @@ export function initNextLevel() {
 
     document.addEventListener('keydown', onKeyDown);
 
-    document.getElementById('btn-new-project')?.addEventListener('click', ()=>{
-      openWizardModal();
-    });
     document.getElementById('btn-open-wizard')?.addEventListener('click', ()=>{
       openWizardModal();
     });
@@ -2876,6 +2960,30 @@ export function initNextLevel() {
       p.pages.push(newPage(name));
       currentPageIdx = p.pages.length - 1;
       pushHistory(); save(); renderSidebar(); render();
+    });
+    document.getElementById('btn-duplicate-page')?.addEventListener('click', ()=>{
+      const p = getProject(); if(!p) return;
+      const src = getPage(); if(!src) return;
+      // Copies the STRUCTURAL stuff (walls/doors/windows) since that's the
+      // room shape, shared no matter which trade you're drawing next.
+      // Assets/notes are left empty — those are trade-specific, and carrying
+      // a Plumbing page's fixtures onto a fresh Electrical page would just
+      // be clutter, not a head start.
+      const copy: Page = {
+        id: uid(),
+        name: src.name + ' (copy)',
+        walls: JSON.parse(JSON.stringify(src.walls)),
+        doors: JSON.parse(JSON.stringify(src.doors)),
+        windows: JSON.parse(JSON.stringify(src.windows)),
+        assets: [],
+        notes: [],
+        history: [], historyIdx: -1,
+      };
+      p.pages.push(copy);
+      currentPageIdx = p.pages.length - 1;
+      selectedWallIdx = -1;
+      pushHistory(); save(); renderSidebar(); render();
+      toast(`⧉ Duplicated as "${copy.name}" — same room, add your own notes/assets`);
     });
 
     document.getElementById('view-toggle')?.addEventListener('click', e=>{
