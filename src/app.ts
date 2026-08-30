@@ -4,6 +4,7 @@ import {
   dehydrateProjects, hydrateProjects, estimateStorage, revokeURL,
 } from './lib/photoStore';
 import { openPhotoBooth } from './lib/photoBooth';
+import { openPhotoViewer } from './lib/photoViewer';
 
 declare global {
   interface Window {
@@ -2259,17 +2260,43 @@ export function initNextLevel() {
   }
 
   // Re-open an existing photo in the booth to add/adjust markup.
-  async function editExistingPhoto(id: string){
+  // Shared: get a photo's bytes back out of storage (IDB, or the private-mode
+  // inline dataUrl fallback), used by both the markup path and the view-only
+  // reference path below.
+  async function fetchPhotoBlob(id: string): Promise<Blob | null> {
     const p = getProject();
     const photo = p?.photos?.find(x => x.id === id);
-    if(!photo) return;
+    if(!photo) return null;
     let blob: Blob | null = null;
     try { blob = await getPhotoBlob(id); } catch { blob = null; }
     if(!blob && photo.dataUrl){                // private-mode inline fallback
       try { const r = await fetch(photo.dataUrl); blob = await r.blob(); } catch { blob = null; }
     }
+    return blob;
+  }
+
+  // Re-open an existing photo in the booth to add/adjust markup. Used by the
+  // sidebar photo gallery (capture/initial-markup flow) — full drawing tools.
+  async function editExistingPhoto(id: string){
+    const blob = await fetchPhotoBlob(id);
     if(!blob){ toast('Photo not found'); return; }
     openPhotoBooth({ imageBlob: blob, onSave: (out) => savePhotoBlob(id, out, false) });
+  }
+
+  // Open a photo as a small floating, view-only window. Used by the
+  // Reference Rail — at the drawing desk you're pulling info off the photo,
+  // not marking it up again. The little ✏️ in the floating window still
+  // hands off to the full Photo Booth if something genuinely needs fixing.
+  async function viewReferencePhoto(id: string){
+    const blob = await fetchPhotoBlob(id);
+    if(!blob){ toast('Photo not found'); return; }
+    const p = getProject();
+    const photo = p?.photos?.find(x => x.id === id);
+    openPhotoViewer({
+      imageBlob: blob,
+      caption: photo?.caption,
+      onEdit: () => editExistingPhoto(id),
+    });
   }
 
   // ── Reference Rail ─────────────────────────────────────────────────────
@@ -2314,7 +2341,7 @@ export function initNextLevel() {
           `;
           const img = row.querySelector('img') as HTMLImageElement;
           getDisplayURL(photo).then(url => { if(url && img) img.src = url; });
-          row.addEventListener('click', () => editExistingPhoto(photo.id));
+          row.addEventListener('click', () => viewReferencePhoto(photo.id));
           photosEl.appendChild(row);
         });
       }
