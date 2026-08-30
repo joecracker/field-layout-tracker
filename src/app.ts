@@ -1,8 +1,9 @@
 import { driveConfigured, isDriveConnected, connectBackup, saveBackup, restoreBackup } from './lib/backup';
 import {
-  putPhoto, deletePhotoBlob, getDisplayURL, downscaleImage,
-  dehydrateProjects, hydrateProjects, estimateStorage,
+  putPhoto, deletePhotoBlob, getDisplayURL, getPhotoBlob, downscaleImage,
+  dehydrateProjects, hydrateProjects, estimateStorage, revokeURL,
 } from './lib/photoStore';
+import { openPhotoBooth } from './lib/photoBooth';
 
 declare global {
   interface Window {
@@ -2128,6 +2129,7 @@ export function initNextLevel() {
     renderPhotoGallery();
     renderAssetPalette();
     updateConnStatus();
+    renderReferenceRail();
   }
 
   function renderAssetPalette() {
@@ -2226,6 +2228,99 @@ export function initNextLevel() {
     editingAssetId = null;
   }
 
+  // Save a marked-up (or plain) photo blob to IndexedDB and refresh the UI.
+  // isNew=true pushes a new gallery entry; isNew=false replaces an existing
+  // photo's bytes in place (re-editing bakes new ink on top of the old — the
+  // marks are flat pixels, same as the Cut Once tool it's ported from).
+  async function savePhotoBlob(id: string, blob: Blob, isNew: boolean){
+    const p = getProject();
+    if(!p) return;
+    if(!p.photos) p.photos = [];
+    let small: Blob;
+    try { small = await downscaleImage(blob); } catch { small = blob; }
+    const existing = p.photos.find(x => x.id === id);
+    const photo: Photo = existing || { id, caption: '', timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+    try {
+      await putPhoto(id, small);
+      revokeURL(id);                          // drop cached URL so the gallery reloads new bytes
+      delete photo.dataUrl;                   // prefer IDB copy if a stale inline one existed
+    } catch {
+      try {
+        photo.dataUrl = await new Promise<string>((res, rej) => {
+          const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = () => rej(r.error); r.readAsDataURL(small);
+        });
+      } catch { toast('Could not read photo'); return; }
+    }
+    if(isNew) p.photos.push(photo);
+    save();
+    renderPhotoGallery();
+    updateStorageMeter();
+    toast(isNew ? 'Photo saved' : 'Markup saved');
+  }
+
+  // Re-open an existing photo in the booth to add/adjust markup.
+  async function editExistingPhoto(id: string){
+    const p = getProject();
+    const photo = p?.photos?.find(x => x.id === id);
+    if(!photo) return;
+    let blob: Blob | null = null;
+    try { blob = await getPhotoBlob(id); } catch { blob = null; }
+    if(!blob && photo.dataUrl){                // private-mode inline fallback
+      try { const r = await fetch(photo.dataUrl); blob = await r.blob(); } catch { blob = null; }
+    }
+    if(!blob){ toast('Photo not found'); return; }
+    openPhotoBooth({ imageBlob: blob, onSave: (out) => savePhotoBlob(id, out, false) });
+  }
+
+  // ── Reference Rail ─────────────────────────────────────────────────────
+  // A pinned, scrollable panel at the drawing desk showing this page's notes,
+  // this project's measurements/specs, and every project photo (tap to
+  // mark up) — so nobody has to leave the canvas to check a number or a
+  // picture while they draw. Independent of the tool/asset sidebar drawers.
+  function renderReferenceRail(){
+    const p = getProject();
+    const page = getPage();
+
+    const notesEl = document.getElementById('reference-notes');
+    if(notesEl){
+      const text = (page?.notes || []).map(n => n.text).filter(t => t && t.trim()).join('\n');
+      notesEl.textContent = text || 'No notes on this page yet — tap to add one.';
+    }
+
+    const specsEl = document.getElementById('reference-specs');
+    if(specsEl){
+      if(p){
+        const ceil = p.ceilingH || 96;
+        const spacing = p.studSpacing || 16;
+        const waste = p.waste || 1.10;
+        specsEl.innerHTML = `Ceiling: ${(ceil/12).toFixed(1)}ft (${ceil}")<br>Studs: ${spacing}" O.C.<br>Waste: ${Math.round((waste-1)*100)}%`;
+      } else {
+        specsEl.textContent = 'No project selected';
+      }
+    }
+
+    const photosEl = document.getElementById('reference-photos');
+    if(photosEl){
+      photosEl.innerHTML = '';
+      if(!p || !p.photos || p.photos.length === 0){
+        photosEl.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.5);">No photos yet</div>';
+      } else {
+        p.photos.forEach(photo => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;background:rgba(255,255,255,0.05);border-radius:6px;padding:4px;';
+          row.innerHTML = `
+            <img alt="Photo" style="width:56px;height:56px;object-fit:cover;border-radius:4px;flex:none;background:#222;" />
+            <span style="font-size:11px;color:#f4f4f2;word-break:break-word;">${photo.caption || '(no caption)'}</span>
+          `;
+          const img = row.querySelector('img') as HTMLImageElement;
+          getDisplayURL(photo).then(url => { if(url && img) img.src = url; });
+          row.addEventListener('click', () => editExistingPhoto(photo.id));
+          photosEl.appendChild(row);
+        });
+      }
+    }
+  }
+
   function renderPhotoGallery(){
     const p = getProject();
     const gallery = document.getElementById('photo-gallery');
@@ -2233,6 +2328,7 @@ export function initNextLevel() {
     gallery.innerHTML = '';
     if(!p || !p.photos || p.photos.length === 0){
       gallery.innerHTML = '<div style="grid-column: span 2; font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; padding: 6px;">No photos yet</div>';
+      renderReferenceRail();
       return;
     }
     p.photos.forEach(photo => {
@@ -2244,7 +2340,10 @@ export function initNextLevel() {
         <button class="photo-delete" data-id="${photo.id}" title="Delete">&times;</button>
       `;
       const img = card.querySelector('.photo-thumb') as HTMLImageElement;
+      img.style.cursor = 'pointer';
+      img.title = 'Tap to mark up';
       getDisplayURL(photo).then(url => { if (url && img) img.src = url; });
+      img.addEventListener('click', () => editExistingPhoto(photo.id));
       card.querySelector('.photo-caption-input')?.addEventListener('input', (e)=>{
         const val = (e.target as HTMLInputElement).value;
         photo.caption = val;
@@ -2260,6 +2359,7 @@ export function initNextLevel() {
       gallery.appendChild(card);
     });
     updateStorageMeter();
+    renderReferenceRail();
   }
 
   async function updateStorageMeter(){
@@ -2592,6 +2692,53 @@ export function initNextLevel() {
     toast(`🎉 "${projTitle}" created for ${custName}!`);
   }
 
+  // Bypasses the whole intro/wizard: pick a category → blank project →
+  // straight to canvas with the drawing tools and matching catalog already
+  // open. Built for anyone (kitchen designer, or bath-focused you/boss) who's
+  // just laying out from known numbers and has zero use for client-info/notes.
+  //
+  // Category → asset-tab mapping lives in one place (CATEGORY_ASSET_MAP) so
+  // adding Deck / Pole Barn / Addition later is just: (1) a new button in the
+  // #skip-category-cards grid in App.tsx, (2) a new entry here.
+  const CATEGORY_ASSET_MAP: Record<string, string> = {
+    'Bathroom': 'plumbing',
+    'Kitchen': 'cabinet',
+    // 'Deck': 'custom',
+    // 'Pole Barn': 'custom',
+    // 'Addition': 'cabinet',
+  };
+
+  function openSkipCategoryModal() {
+    document.getElementById('skip-category-modal')?.classList.remove('hidden');
+  }
+  function closeSkipCategoryModal() {
+    document.getElementById('skip-category-modal')?.classList.add('hidden');
+  }
+
+  function skipToDrawing(category: string) {
+    const p = newProject('New Project', category);
+    currentCategory = category;
+    activeAssetCat = CATEGORY_ASSET_MAP[category] || 'cabinet';
+
+    projects.push(p);
+    currentProjectId = p.id;
+    currentPageIdx = 0;
+
+    pushHistory();
+    save();
+    renderSidebar();
+    render();
+
+    const openIfClosed = (contentId: string, btnId: string) => {
+      const content = document.getElementById(contentId);
+      if (content?.classList.contains('hidden')) (document.getElementById(btnId) as HTMLElement)?.click();
+    };
+    openIfClosed('tools-drawer-content', 'btn-tools-drawer');
+    openIfClosed('assets-drawer-content', 'btn-assets-drawer');
+    closeMobileSidebar(); // on phone/small tablet, drop the sidebar so the canvas is front and center
+    toast(`🎨 Blank ${category} project ready — start drawing`);
+  }
+
   function initEvents(){
     canvas.addEventListener('mousedown', onCanvasDown);
     canvas.addEventListener('mousemove', onCanvasMove);
@@ -2611,6 +2758,32 @@ export function initNextLevel() {
     });
     document.getElementById('btn-open-wizard')?.addEventListener('click', ()=>{
       openWizardModal();
+    });
+    document.getElementById('btn-skip-to-drawing')?.addEventListener('click', ()=>{
+      openSkipCategoryModal();
+    });
+    document.getElementById('skip-category-close-x')?.addEventListener('click', closeSkipCategoryModal);
+    document.getElementById('skip-category-cards')?.addEventListener('click', e => {
+      const target = e.target as HTMLElement;
+      const card = target.closest('.skip-cat-card') as HTMLElement;
+      if (!card) return;
+      const cat = card.dataset.skipCat || 'Bathroom';
+      closeSkipCategoryModal();
+      skipToDrawing(cat);
+    });
+
+    // Reference rail: pull-tab open, X close. Measurement fields refresh the
+    // rail's specs line live (notes/photos already refresh via their own
+    // save paths above).
+    document.getElementById('reference-rail-tab')?.addEventListener('click', () => {
+      document.getElementById('reference-rail')?.classList.remove('hidden');
+      renderReferenceRail();
+    });
+    document.getElementById('reference-rail-close')?.addEventListener('click', () => {
+      document.getElementById('reference-rail')?.classList.add('hidden');
+    });
+    ['ceiling-height', 'stud-spacing', 'waste-multiplier'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', renderReferenceRail);
     });
     document.getElementById('btn-toolbar-wizard')?.addEventListener('click', ()=>{
       openWizardModal();
@@ -2860,39 +3033,34 @@ export function initNextLevel() {
       });
     });
 
-    const photoInput = document.getElementById('photo-file-input') as HTMLInputElement;
-    if(photoInput){
-      photoInput.addEventListener('change', async e => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if(!file) return;
-        const p = getProject();
-        if(!p) return;
-        if(!p.photos) p.photos = [];
-        const id = uid();
-        const photo: Photo = {
-          id,
-          caption: '',
-          timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-        };
-        try {
-          const blob = await downscaleImage(file);
-          await putPhoto(id, blob);            // bytes -> IndexedDB
-        } catch {
-          // IndexedDB unavailable (e.g. private mode): fall back to inline dataUrl.
-          try {
-            const blob = await downscaleImage(file);
-            photo.dataUrl = await new Promise<string>((res, rej) => {
-              const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = () => rej(r.error); r.readAsDataURL(blob);
-            });
-          } catch { toast('Could not read photo'); return; }
-        }
-        p.photos.push(photo);
-        save();
-        renderPhotoGallery();
-        photoInput.value = '';
-        toast('Photo added');
-      });
+    // ── Photo capture + Photo Booth markup ────────────────────────────────
+    // A newly captured/selected file opens the booth right away — mark it up or
+    // just save it. Nothing is forced. (savePhotoBlob/editExistingPhoto are
+    // defined at init scope so the gallery can reach them too.)
+    function onPhotoFile(file: File){
+      const id = uid();
+      openPhotoBooth({ imageBlob: file, onSave: (blob) => savePhotoBlob(id, blob, true) });
     }
+
+    const camInput = document.getElementById('photo-input-camera') as HTMLInputElement;
+    const galInput = document.getElementById('photo-input-gallery') as HTMLInputElement;
+    const chooser  = document.getElementById('photo-source-chooser');
+    document.getElementById('btn-add-photo')?.addEventListener('click', () => {
+      chooser?.classList.toggle('hidden');
+    });
+    document.getElementById('btn-photo-camera')?.addEventListener('click', () => {
+      chooser?.classList.add('hidden'); camInput?.click();
+    });
+    document.getElementById('btn-photo-gallery')?.addEventListener('click', () => {
+      chooser?.classList.add('hidden'); galInput?.click();
+    });
+    [camInput, galInput].forEach(input => {
+      input?.addEventListener('change', e => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        (e.target as HTMLInputElement).value = '';
+        if(file) onPhotoFile(file);
+      });
+    });
 
     document.getElementById('btn-export-boss')?.addEventListener('click', openBossReportModal);
 
@@ -3135,12 +3303,14 @@ export function initNextLevel() {
           page.notes = lines.map((line, i) => page.notes[i] ? { ...page.notes[i], text: line } : { text: line, x: 100, y: 100 });
           save();
           render();
+          renderReferenceRail();
         }
         modal.classList.add('hidden');
       }
     };
     document.getElementById('project-notes')?.addEventListener('focus', openNotesModal);
     document.getElementById('project-notes')?.addEventListener('click', openNotesModal);
+    document.getElementById('reference-notes')?.addEventListener('click', openNotesModal);
     document.getElementById('notes-modal-close-x')?.addEventListener('click', closeNotesModal);
     document.getElementById('notes-modal-save')?.addEventListener('click', closeNotesModal);
     document.getElementById('notes-modal-overlay')?.addEventListener('click', (e) => {
@@ -3157,6 +3327,7 @@ export function initNextLevel() {
       });
       page.notes = newNotes;
       save(); render();
+      renderReferenceRail();
     });
 
     document.getElementById('wall-edit-update')?.addEventListener('click', ()=>{

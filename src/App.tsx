@@ -14,6 +14,10 @@ export default function App() {
           <span id="sidebar-close" className="sidebar-close">&times;</span>
         </div>
         <section className="sidebar-section">
+          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: '#f4b400', color: '#1a1200', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>✏️ Skip to Drawing</button>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Pick Bathroom or Kitchen — no client info needed</div>
+        </section>
+        <section className="sidebar-section">
           <div className="section-title">Project & Contact</div>
           <input type="text" id="customer-name" placeholder="Customer Name" autoComplete="off" />
           <input type="tel" id="customer-phone" placeholder="Phone Number" autoComplete="off" style={{ marginTop: '6px' }} />
@@ -197,23 +201,21 @@ export default function App() {
           <textarea id="project-notes" rows={3} placeholder="Field notes & observations..."></textarea>
           <button id="btn-drop-pin-tool" className="btn btn-sm btn-block" style={{ marginTop: '6px', marginBottom: '6px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)', cursor: 'pointer' }}>📌 Drop Note Pin on Canvas</button>
           <div style={{ marginTop: '8px' }}>
-            <label className="btn btn-sm btn-block btn-accent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '6px' }}>
+            <button id="btn-add-photo" className="btn btn-sm btn-block btn-accent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '6px' }}>
               <span>📷 Take / Add Photo</span>
-              <input type="file" id="photo-file-input" accept="image/*" capture="environment" style={{ display: 'none' }} />
-            </label>
+            </button>
+            <div id="photo-source-chooser" className="hidden" style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+              <button id="btn-photo-camera" className="btn btn-sm" style={{ flex: 1, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }}>📷 Camera</button>
+              <button id="btn-photo-gallery" className="btn btn-sm" style={{ flex: 1, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }}>🖼️ Gallery</button>
+            </div>
+            <input type="file" id="photo-input-camera" accept="image/*" capture="environment" style={{ display: 'none' }} />
+            <input type="file" id="photo-input-gallery" accept="image/*" style={{ display: 'none' }} />
             <div id="photo-gallery" className="photo-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginTop: '8px' }}></div>
             <div id="storage-meter" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '8px', textAlign: 'center' }}></div>
           </div>
         </section>
         <section className="sidebar-section">
           <button id="btn-export-boss" className="btn btn-block btn-accent" style={{ background: '#2563eb', color: '#fff', marginBottom: '6px' }}>📋 Send to Laptop (Boss Report)</button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-            <button id="btn-export" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9 }}>Export JSON</button>
-            <label className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', border: '1px solid var(--border)' }}>
-              <span>Import JSON</span>
-              <input type="file" id="import-file-input" accept=".json" style={{ display: 'none' }} />
-            </label>
-          </div>
           <div className="section-title" style={{ marginTop: '10px' }}>☁ Google Drive Backup</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '4px' }}>
             <button id="btn-drive-connect" className="btn btn-block" style={{ fontSize: '11px', opacity: 0.9 }}>Connect</button>
@@ -253,6 +255,27 @@ export default function App() {
         </div>
         <div id="canvas-wrap">
           <canvas id="floorplan"></canvas>
+          <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--blue,#1e3a8a)', color: '#fff', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>📌</button>
+          <div id="reference-rail" className="hidden" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '280px', maxWidth: '85vw', background: 'rgba(20,20,26,0.97)', zIndex: 65, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 16px rgba(0,0,0,0.35)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.15)', flex: 'none' }}>
+              <span style={{ fontWeight: 700, color: '#fff', fontSize: '13px' }}>📌 Reference</span>
+              <button id="reference-rail-close" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }}>📝 Notes (this page)</div>
+                <div id="reference-notes" style={{ fontSize: '12px', color: '#f4f4f2', whiteSpace: 'pre-wrap', lineHeight: 1.5, background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '8px', cursor: 'pointer' }} title="Tap to edit notes"></div>
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }}>📏 Measurements</div>
+                <div id="reference-specs" style={{ fontSize: '12px', color: '#f4f4f2', lineHeight: 1.6 }}></div>
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }}>📷 Photos <span style={{ opacity: 0.7, fontWeight: 400, textTransform: 'none' }}>(tap to mark up)</span></div>
+                <div id="reference-photos" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
         <button id="btn-voice" className="voice-btn" title="Record Voice Note">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -605,6 +628,20 @@ export default function App() {
           <div className="modal-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
             <button id="boss-report-print" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff' }}>🖨️ Print / Save PDF</button>
             <button id="boss-report-close" className="btn btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="skip-category-modal" className="modal-overlay hidden">
+        <div className="modal" style={{ maxWidth: '380px', width: '90%' }}>
+          <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>✏️ Skip to Drawing</span>
+            <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+          </div>
+          <p className="modal-sub">What are we drawing?</p>
+          <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>🛁 Bathroom</button>
+            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }}>🍳 Kitchen</button>
           </div>
         </div>
       </div>
