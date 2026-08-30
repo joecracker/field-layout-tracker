@@ -2624,29 +2624,34 @@ export function initNextLevel() {
 
   function openWizardModal() {
     wizStep = 1;
+    // If a project's already open, the Wizard is EDITING it, not starting a
+    // fresh one — pull its real values in instead of handing back a blank
+    // form. (This used to always reset to blank, which is why Wizard looked
+    // "broken" any time you opened it on an existing job.)
+    const existing = getProject();
     wizData = {
-      customer: '',
-      phone: '',
-      email: '',
-      address: '',
-        title: '',
-      category: currentCategory || 'Kitchen',
-      scope: currentScope || 'Full Build',
-      ceilingH: 96,
-      studSpacing: 16,
+      customer: existing?.customer || '',
+      phone: existing?.phone || '',
+      email: existing?.email || '',
+      address: existing?.address || '',
+      title: existing ? (existing.name.includes(' - ') ? existing.name.split(' - ').slice(1).join(' - ') : existing.name) : '',
+      category: existing?.category || currentCategory || 'Kitchen',
+      scope: existing?.scope || currentScope || 'Full Build',
+      ceilingH: existing?.ceilingH ?? 96,
+      studSpacing: existing?.studSpacing ?? 16,
       wallType: currentWallType || 'existing_to_remain'
     };
 
     const custEl = document.getElementById('wiz-customer-name') as HTMLInputElement;
-    if (custEl) custEl.value = '';
+    if (custEl) custEl.value = wizData.customer;
     const phoneEl = document.getElementById('wiz-customer-phone') as HTMLInputElement;
-    if (phoneEl) phoneEl.value = '';
+    if (phoneEl) phoneEl.value = wizData.phone;
     const emailEl = document.getElementById('wiz-customer-email') as HTMLInputElement;
-    if (emailEl) emailEl.value = '';
+    if (emailEl) emailEl.value = wizData.email;
     const addressEl = document.getElementById('wiz-customer-address') as HTMLInputElement;
-    if (addressEl) addressEl.value = '';
+    if (addressEl) addressEl.value = wizData.address;
     const titleEl = document.getElementById('wiz-project-title') as HTMLInputElement;
-    if (titleEl) titleEl.value = '';
+    if (titleEl) titleEl.value = wizData.title;
 
     document.querySelectorAll('#wiz-cat-cards .wiz-cat-card').forEach(card => {
       const cat = (card as HTMLElement).dataset.cat;
@@ -2718,7 +2723,14 @@ export function initNextLevel() {
     const projTitle = wizData.title.trim() || `${wizData.category} Area`;
     const fullProjName = `${custName} - ${projTitle}`;
 
-    const p = newProject(fullProjName, wizData.category);
+    // EDIT existing project if one's open — the Wizard used to always spin
+    // up a brand new project here, silently leaving your real one untouched
+    // and landing you on an empty duplicate. Only create new when there's
+    // genuinely nothing open yet.
+    const existing = getProject();
+    const p = existing || newProject(fullProjName, wizData.category);
+
+    p.name = fullProjName;
     p.customer = custName;
     p.phone = wizData.phone;
     p.email = wizData.email;
@@ -2740,16 +2752,18 @@ export function initNextLevel() {
       activeAssetCat = 'cabinets';
     }
 
-    projects.push(p);
+    if (!existing) {
+      projects.push(p);
+      currentPageIdx = 0;
+    }
     currentProjectId = p.id;
-    currentPageIdx = 0;
 
     pushHistory();
     save();
     renderSidebar();
     render();
     closeWizardModal();
-    toast(`🎉 "${projTitle}" created for ${custName}!`);
+    toast(existing ? `✅ "${projTitle}" updated for ${custName}!` : `🎉 "${projTitle}" created for ${custName}!`);
   }
 
   // Shared "arrive at the drawing desk" landing sequence — used by both a
