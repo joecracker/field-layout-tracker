@@ -2285,8 +2285,11 @@ export function initNextLevel() {
 
   // Open a photo as a small floating, view-only window. Used by the
   // Reference Rail — at the drawing desk you're pulling info off the photo,
-  // not marking it up again. The little ✏️ in the floating window still
-  // hands off to the full Photo Booth if something genuinely needs fixing.
+  // not marking it up again. The little ✏️ still hands off to full Photo
+  // Booth if something needs fixing — and when that save lands, this
+  // re-opens the SAME floating window with the freshly baked image (keeps
+  // whatever spot/size you had it parked at) so the new marks actually show
+  // up when you drop back down to it, instead of leaving the old photo showing.
   async function viewReferencePhoto(id: string){
     const blob = await fetchPhotoBlob(id);
     if(!blob){ toast('Photo not found'); return; }
@@ -2295,7 +2298,13 @@ export function initNextLevel() {
     openPhotoViewer({
       imageBlob: blob,
       caption: photo?.caption,
-      onEdit: () => editExistingPhoto(id),
+      onEdit: () => openPhotoBooth({
+        imageBlob: blob,
+        onSave: async (out) => {
+          await savePhotoBlob(id, out, false);
+          viewReferencePhoto(id); // pull the just-saved bytes back into the same floating window
+        },
+      }),
     });
   }
 
