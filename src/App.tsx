@@ -14,8 +14,8 @@ export default function App() {
           <span id="sidebar-close" className="sidebar-close">&times;</span>
         </div>
         <section className="sidebar-section">
-          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: '#f4b400', color: '#1a1200', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>✏️ Skip to Drawing</button>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Pick Bathroom or Kitchen — no client info needed</div>
+          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: '#f4b400', color: '#1a1200', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Start quick, jump to an existing job, or go full setup</div>
         </section>
         <section className="sidebar-section">
           <div className="section-title">Project & Contact</div>
@@ -28,7 +28,7 @@ export default function App() {
             <button id="btn-save-project" className="btn btn-sm">Save</button>
           </div>
           <div className="project-search-wrap">
-            <input type="text" id="project-search" placeholder="Search projects..." />
+            <input type="text" id="project-search" placeholder="Search or open a job..." autoComplete="off" />
             <ul id="project-list" className="project-list"></ul>
           </div>
         </section>
@@ -644,7 +644,7 @@ export default function App() {
       <div id="skip-category-modal" className="modal-overlay hidden">
         <div className="modal" style={{ maxWidth: '420px', width: '90%', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 'none' }}>
-            <span>✏️ Skip to Drawing</span>
+            <span>New / Open Project</span>
             <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           <p className="modal-sub" style={{ flex: 'none' }}>Jump straight to a job's canvas, or start a blank one</p>
@@ -652,6 +652,7 @@ export default function App() {
             <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Bath</button>
             <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Kitchen</button>
           </div>
+          <button id="skip-btn-full-setup" className="btn btn-sm btn-block" style={{ marginTop: '8px', flex: 'none', background: 'none', border: '1px dashed var(--border)', color: '#64748b', fontSize: '12px', fontWeight: 600 }}>🪄 Need client info first? Full Setup Wizard →</button>
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
           <input type="text" id="skip-job-search" placeholder="Search jobs..." style={{ marginTop: '6px', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', flex: 'none' }} />
           <div id="skip-existing-jobs-list" style={{ flex: 1, overflowY: 'auto', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}></div>
@@ -671,7 +672,8 @@ export default function App() {
             <button id="wiz-btn-switch-job" className="btn btn-sm" style={{ fontSize: '11px', padding: '3px 8px' }}>🔍 Switch Job</button>
           </div>
           <div id="wiz-job-search-panel" className="hidden" style={{ marginBottom: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px' }}>
-            <input type="text" id="wiz-job-search" placeholder="Search jobs..." style={{ width: '100%', padding: '7px 9px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }} />
+            <button id="wiz-btn-new-job" className="btn btn-sm btn-block" style={{ marginBottom: '8px', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', color: 'var(--blue)', fontWeight: 700 }}>+ Start a New Job</button>
+            <input type="text" id="wiz-job-search" placeholder="Or search an existing job..." style={{ width: '100%', padding: '7px 9px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }} />
             <div id="wiz-job-search-list" style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}></div>
           </div>
           

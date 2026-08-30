@@ -2064,6 +2064,8 @@ export function initNextLevel() {
           selectedOpening = null;
           hideOpeningEdit();
           closeMobileSidebar();
+          document.getElementById('project-list')?.classList.remove('open');
+          (document.getElementById('project-search') as HTMLInputElement)?.blur();
           renderSidebar(); render();
         });
         list.appendChild(li);
@@ -2610,6 +2612,7 @@ export function initNextLevel() {
 
   // ── New Project Wizard Logic ─────────────────────────────
   let wizStep = 1;
+  let wizPreviousProjectId: string | null = null;
   let wizData = {
     customer: '',
     phone: '',
@@ -2697,6 +2700,14 @@ export function initNextLevel() {
   }
 
   function closeWizardModal() {
+    // If "Start a New Job" was tapped but never finished, don't strand the
+    // app on "no project loaded" — go back to whatever was open before.
+    if (!currentProjectId && wizPreviousProjectId) {
+      currentProjectId = wizPreviousProjectId;
+      renderSidebar();
+      render();
+    }
+    wizPreviousProjectId = null;
     document.getElementById('project-wizard-modal')?.classList.add('hidden');
   }
 
@@ -3006,6 +3017,14 @@ export function initNextLevel() {
       save(); toast('Saved');
     });
     document.getElementById('project-search')?.addEventListener('input', ()=> renderSidebar());
+    document.getElementById('project-search')?.addEventListener('focus', () => {
+      document.getElementById('project-list')?.classList.add('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!(e.target as HTMLElement).closest('.project-search-wrap')) {
+        document.getElementById('project-list')?.classList.remove('open');
+      }
+    });
     document.getElementById('skip-job-search')?.addEventListener('input', ()=> renderSkipExistingJobsList());
 
     document.getElementById('wiz-btn-switch-job')?.addEventListener('click', () => {
@@ -3023,6 +3042,25 @@ export function initNextLevel() {
     document.getElementById('wiz-job-search')?.addEventListener('input', (e) => {
       const listEl = document.getElementById('wiz-job-search-list');
       if (listEl) renderJobPickerList(listEl, (e.target as HTMLInputElement).value, selectWizardJob, currentProjectId || undefined);
+    });
+    // Detach from whatever project was active and open the Wizard in
+    // blank-form mode — shared by the button inside the Wizard's own
+    // Switch Job panel AND the "Full Setup Wizard" link on the Skip to
+    // Drawing / New Project modal, so there's one real definition of
+    // "start fresh," not two that could drift apart.
+    function startNewJobInWizard() {
+      wizPreviousProjectId = currentProjectId;
+      currentProjectId = null;
+      wizStep = 1;
+      hydrateWizardFromProject(undefined);
+      document.getElementById('wiz-job-search-panel')?.classList.add('hidden');
+      renderWizardStep();
+      document.getElementById('project-wizard-modal')?.classList.remove('hidden');
+    }
+    document.getElementById('wiz-btn-new-job')?.addEventListener('click', startNewJobInWizard);
+    document.getElementById('skip-btn-full-setup')?.addEventListener('click', () => {
+      closeSkipCategoryModal();
+      startNewJobInWizard();
     });
 
     document.getElementById('btn-send-job')?.addEventListener('click', sendCurrentJob);
