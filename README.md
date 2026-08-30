@@ -20,14 +20,13 @@ Field Layout Tracker is a lightweight, contractor-focused sketch and measurement
 
 - React + TypeScript
 - Vite
-- Deployed on Netlify
+- Deployed on Cloudflare Pages
 
 ## Project structure
 
 ```
 src/            React app source
 public/         Static assets, PWA manifest & service worker
-netlify.toml    Netlify build configuration
 ```
 
 ## Local development
@@ -39,7 +38,7 @@ npm run dev
 
 ## Deployment
 
-This project auto-deploys to Netlify on every push to `main`. Build settings live in `netlify.toml`:
+This project auto-deploys to Cloudflare Pages on every push to `main` (files are uploaded directly via the GitHub web UI — no local git/CLI in this workflow). Build settings are configured in the Cloudflare Pages dashboard:
 
 ```
 build command: npm run build

@@ -16,24 +16,22 @@ The Drive button needs **one Google OAuth Client ID**. It's a public identifier 
 4. **APIs & Services → Credentials → Create Credentials → OAuth client ID**:
    - Application type: **Web application**.
    - Name: "Personal Apps Web Client".
-   - **Authorized JavaScript origins** — add one line per place these apps run, e.g.:
+   - **Authorized JavaScript origins** — add one line per place these apps actually run. As of this doc:
      - `http://localhost:5173` (local dev)
-     - `https://field-layout-tracker.netlify.app` (or whatever your actual Netlify domain is)
-     - `https://proposal-builder.netlify.app`
-     - `https://fantasy-draft-assistant.netlify.app`
-     - `https://crackerbox-studio.netlify.app`
+     - `https://nextlevel.crackerbox.app` (Field Layout Tracker — live on Cloudflare Pages)
+     - Add a line for each of the other 3 apps' *current* live domain — Netlify is no longer in use for any of Tim's apps, so don't reuse the old `.netlify.app` entries. Check each app's actual host before adding it here.
    - Leave "Authorized redirect URIs" blank — this flow doesn't use redirects.
    - Create → copy the **Client ID** (looks like `123456789-abc...apps.googleusercontent.com`).
 
 ## 2. Add the Client ID to each app
 
-In each repo, set the env var (both locally and in Netlify's Site settings → Environment variables):
+In each repo, set the env var (both locally and wherever each app is actually deployed — check each app's own hosting dashboard for environment variable settings):
 
 ```
 VITE_GOOGLE_CLIENT_ID="123456789-abc...apps.googleusercontent.com"
 ```
 
-Same value in all 4 apps. Redeploy after adding it to Netlify.
+Same value in all 4 apps. Redeploy after adding it.
 
 ## 3. How it works / what it can access
 
