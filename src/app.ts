@@ -2826,6 +2826,9 @@ export function initNextLevel() {
     });
     document.getElementById('wizard-modal-close-x')?.addEventListener('click', closeWizardModal);
     document.getElementById('wiz-btn-cancel')?.addEventListener('click', closeWizardModal);
+    document.getElementById('project-wizard-modal')?.addEventListener('click', (e) => {
+      if((e.target as HTMLElement).id === 'project-wizard-modal') closeWizardModal();
+    });
 
     document.getElementById('wiz-cat-cards')?.addEventListener('click', e => {
       const target = e.target as HTMLElement;

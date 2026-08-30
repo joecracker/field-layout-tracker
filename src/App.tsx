@@ -416,7 +416,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '480px', width: '92%' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span id="asset-modal-title">Edit Asset Properties</span>
-            <button id="asset-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            <button id="asset-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           <p className="modal-sub">Adjust dimensions, height, rotation, or shower enclosure parameters.</p>
           <div className="modal-body" style={{ padding: '12px 0' }}>
@@ -574,7 +574,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '650px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>✏️ Edit & Adjust Takeoff Quantities</span>
-            <button id="takeoff-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            <button id="takeoff-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           <p className="modal-sub">Adjust calculated numbers or add extra items (e.g. doors in other un-drawn rooms, extra materials) for this project report.</p>
           <div className="modal-body" style={{ padding: '12px 0', color: '#1f2937' }}>
@@ -619,7 +619,7 @@ export default function App() {
         <div className="modal modal-boss-report" style={{ maxWidth: '820px', width: '92%', maxHeight: '92vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>📋 Boss Field Summary Report</span>
-            <button id="boss-report-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            <button id="boss-report-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           <p className="modal-sub">Complete field survey report including floor plan drawing, photo attachments, notes, and takeoff calculations.</p>
           <div className="modal-body" id="boss-report-content" style={{ padding: '16px 0', color: '#1f2937' }}>
@@ -636,7 +636,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '380px', width: '90%' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>✏️ Skip to Drawing</span>
-            <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           <p className="modal-sub">What are we drawing?</p>
           <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
@@ -651,7 +651,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '680px', width: '92%', maxHeight: '90vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>🪄 New Project Setup Wizard</span>
-            <button id="wizard-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#fff' }}>&times;</button>
+            <button id="wizard-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
           </div>
           
           {/* Stepper Header */}
