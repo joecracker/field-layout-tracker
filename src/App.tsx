@@ -17,7 +17,7 @@ export default function App() {
           <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: '#f4b400', color: '#1a1200', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Start quick, jump to an existing job, or go full setup</div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section" id="project-contact-section">
           <div className="section-title">Project & Contact</div>
           <input type="text" id="customer-name" placeholder="Customer Name" autoComplete="off" />
           <input type="tel" id="customer-phone" placeholder="Phone Number" autoComplete="off" style={{ marginTop: '6px' }} />
@@ -27,7 +27,7 @@ export default function App() {
             <button id="btn-open-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none' }}>🪄 Wizard</button>
             <button id="btn-save-project" className="btn btn-sm">Save</button>
           </div>
-          <div className="project-search-wrap">
+          <div className="project-search-wrap" style={{ marginTop: '12px' }}>
             <input type="text" id="project-search" placeholder="Search or open a job..." autoComplete="off" />
             <ul id="project-list" className="project-list"></ul>
           </div>

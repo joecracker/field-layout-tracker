@@ -2033,6 +2033,13 @@ export function initNextLevel() {
       currentCategory = p.category || 'Kitchen';
       currentScope = p.scope || currentScope;
     }
+    // No point showing empty Customer/Phone/Email/Address fields and a
+    // Wizard/Save row that don't apply to anything yet — with nothing
+    // loaded, the "+ New / Open Project" button above is the only thing
+    // that should be competing for attention. This section reappears the
+    // moment a project actually exists.
+    document.getElementById('project-contact-section')?.classList.toggle('hidden', !p);
+
     const custInput = document.getElementById('customer-name') as HTMLInputElement;
     if (custInput) custInput.value = p ? p.customer || p.name : '';
     const phoneInput = document.getElementById('customer-phone') as HTMLInputElement;
