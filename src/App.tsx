@@ -653,6 +653,7 @@ export default function App() {
             <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Kitchen</button>
           </div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
+          <input type="text" id="skip-job-search" placeholder="Search jobs..." style={{ marginTop: '6px', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', flex: 'none' }} />
           <div id="skip-existing-jobs-list" style={{ flex: 1, overflowY: 'auto', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}></div>
         </div>
       </div>
@@ -663,6 +664,15 @@ export default function App() {
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>🪄 New Project Setup Wizard</span>
             <button id="wizard-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+            <span id="wiz-editing-label" style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Starting a new job</span>
+            <button id="wiz-btn-switch-job" className="btn btn-sm" style={{ fontSize: '11px', padding: '3px 8px' }}>🔍 Switch Job</button>
+          </div>
+          <div id="wiz-job-search-panel" className="hidden" style={{ marginBottom: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px' }}>
+            <input type="text" id="wiz-job-search" placeholder="Search jobs..." style={{ width: '100%', padding: '7px 9px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }} />
+            <div id="wiz-job-search-list" style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}></div>
           </div>
           
           {/* Stepper Header */}

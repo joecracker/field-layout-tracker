@@ -2623,13 +2623,7 @@ export function initNextLevel() {
     wallType: 'existing_to_remain'
   };
 
-  function openWizardModal() {
-    wizStep = 1;
-    // If a project's already open, the Wizard is EDITING it, not starting a
-    // fresh one — pull its real values in instead of handing back a blank
-    // form. (This used to always reset to blank, which is why Wizard looked
-    // "broken" any time you opened it on an existing job.)
-    const existing = getProject();
+  function hydrateWizardFromProject(existing: Project | undefined) {
     wizData = {
       customer: existing?.customer || '',
       phone: existing?.phone || '',
@@ -2667,6 +2661,36 @@ export function initNextLevel() {
     if (studEl) studEl.value = wizData.studSpacing.toString();
     const wallTypeEl = document.getElementById('wiz-wall-type') as HTMLSelectElement;
     if (wallTypeEl) wallTypeEl.value = wizData.wallType;
+
+    const editingLabel = document.getElementById('wiz-editing-label');
+    if (editingLabel) editingLabel.textContent = existing ? `Editing: ${existing.name}` : 'Starting a new job';
+  }
+
+  // Picking a job from the Wizard's "Switch Job" search — same idea as
+  // jumpToExistingJob, but stays inside the Wizard instead of closing it,
+  // since the whole point here is reviewing/editing that job's details.
+  function selectWizardJob(id: string) {
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    currentProjectId = p.id;
+    currentPageIdx = 0;
+    wizStep = 1;
+    hydrateWizardFromProject(p);
+    document.getElementById('wiz-job-search-panel')?.classList.add('hidden');
+    renderWizardStep();
+    renderSidebar();
+  }
+
+  function openWizardModal() {
+    wizStep = 1;
+    // If a project's already open, the Wizard is EDITING it, not starting a
+    // fresh one — pull its real values in instead of handing back a blank
+    // form. (This used to always reset to blank, which is why Wizard looked
+    // "broken" any time you opened it on an existing job.)
+    hydrateWizardFromProject(getProject());
+    document.getElementById('wiz-job-search-panel')?.classList.add('hidden');
+    const searchInput = document.getElementById('wiz-job-search') as HTMLInputElement;
+    if (searchInput) searchInput.value = '';
 
     renderWizardStep();
     document.getElementById('project-wizard-modal')?.classList.remove('hidden');
@@ -2816,20 +2840,23 @@ export function initNextLevel() {
     document.getElementById('skip-category-modal')?.classList.add('hidden');
   }
 
-  // The "Or jump to an existing job" list inside the Skip to Drawing popup —
-  // this is the desk-side use case: you already collected a couple jobs in
-  // the field (notes/photos/measurements are already there), you just don't
-  // want to hunt through the sidebar list to find the right one.
-  function renderSkipExistingJobsList() {
-    const listEl = document.getElementById('skip-existing-jobs-list');
-    if (!listEl) return;
+  // Shared searchable job-picker — one row-rendering implementation reused
+  // by Skip to Drawing's "jump to an existing job" list AND the Wizard's
+  // "switch job" panel, instead of two near-identical copies drifting apart.
+  function renderJobPickerList(listEl: HTMLElement, searchTerm: string, onSelect: (id: string) => void, excludeId?: string) {
     listEl.innerHTML = '';
-    if (projects.length === 0) {
-      listEl.innerHTML = '<div style="font-size:12px;color:#64748b;text-align:center;padding:14px 0;">No jobs yet — start one above</div>';
+    const term = searchTerm.trim().toLowerCase();
+    const filtered = projects
+      .filter(p => !excludeId || p.id !== excludeId)
+      .filter(p => !term || p.name.toLowerCase().includes(term))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (filtered.length === 0) {
+      const msg = projects.length === 0 ? 'No jobs yet — start one above' : 'No jobs match that search';
+      listEl.innerHTML = `<div style="font-size:12px;color:#64748b;text-align:center;padding:14px 0;">${msg}</div>`;
       return;
     }
-    const sorted = [...projects].sort((a, b) => a.name.localeCompare(b.name));
-    sorted.forEach(p => {
+    filtered.forEach(p => {
       const photoCount = p.photos?.length || 0;
       const noteCount = p.pages.reduce((sum, pg) => sum + (pg.notes?.length || 0), 0);
       const row = document.createElement('button');
@@ -2842,9 +2869,20 @@ export function initNextLevel() {
         </div>
         <span style="opacity:0.5;flex:none;">&rsaquo;</span>
       `;
-      row.addEventListener('click', () => jumpToExistingJob(p.id));
+      row.addEventListener('click', () => onSelect(p.id));
       listEl.appendChild(row);
     });
+  }
+
+  // The "Or jump to an existing job" list inside the Skip to Drawing popup —
+  // this is the desk-side use case: you already collected a couple jobs in
+  // the field (notes/photos/measurements are already there), you just don't
+  // want to hunt through the sidebar list to find the right one.
+  function renderSkipExistingJobsList() {
+    const listEl = document.getElementById('skip-existing-jobs-list');
+    if (!listEl) return;
+    const searchInput = document.getElementById('skip-job-search') as HTMLInputElement;
+    renderJobPickerList(listEl, searchInput?.value || '', jumpToExistingJob);
   }
 
   // Land on an existing job's canvas — same reset the sidebar project-list
@@ -2968,6 +3006,24 @@ export function initNextLevel() {
       save(); toast('Saved');
     });
     document.getElementById('project-search')?.addEventListener('input', ()=> renderSidebar());
+    document.getElementById('skip-job-search')?.addEventListener('input', ()=> renderSkipExistingJobsList());
+
+    document.getElementById('wiz-btn-switch-job')?.addEventListener('click', () => {
+      const panel = document.getElementById('wiz-job-search-panel');
+      const isHidden = panel?.classList.contains('hidden');
+      panel?.classList.toggle('hidden');
+      if (isHidden) {
+        const searchInput = document.getElementById('wiz-job-search') as HTMLInputElement;
+        if (searchInput) searchInput.value = '';
+        const listEl = document.getElementById('wiz-job-search-list');
+        if (listEl) renderJobPickerList(listEl, '', selectWizardJob, currentProjectId || undefined);
+        searchInput?.focus();
+      }
+    });
+    document.getElementById('wiz-job-search')?.addEventListener('input', (e) => {
+      const listEl = document.getElementById('wiz-job-search-list');
+      if (listEl) renderJobPickerList(listEl, (e.target as HTMLInputElement).value, selectWizardJob, currentProjectId || undefined);
+    });
 
     document.getElementById('btn-send-job')?.addEventListener('click', sendCurrentJob);
     document.getElementById('btn-open-job')?.addEventListener('click', ()=>{
