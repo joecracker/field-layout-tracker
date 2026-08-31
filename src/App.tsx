@@ -6,6 +6,59 @@ import { initNextLevel } from './app';
 // unlike the native <input capture> which desktop browsers ignore.
 // On snap: feed the photo into the existing #photo-input-camera pipeline
 // (Photo Booth markup → savePhotoBlob → IndexedDB) — zero app.ts changes.
+type JobSummary = { id: string; name: string; category: string; photoCount: number; noteCount: number };
+declare global {
+  interface Window {
+    NextLevel?: {
+      newJob: () => string;
+      listJobs: () => JobSummary[];
+      openJob: (id: string) => void;
+      openSkipCategory: () => void;
+    };
+  }
+}
+
+function OpenJobPicker({ onOpen, onCancel }: { onOpen: (id: string) => void; onCancel: () => void }) {
+  const [q, setQ] = useState('');
+  const jobs = (window.NextLevel?.listJobs() || [])
+    .filter(j => !q.trim() || j.name.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9998, background: 'var(--ink)',
+      display: 'flex', flexDirection: 'column', padding: '20px', boxSizing: 'border-box',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+        <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'var(--cream)', fontSize: '26px', cursor: 'pointer', lineHeight: 1 }}>&larr;</button>
+        <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--cream)' }}>Open Job</div>
+      </div>
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search jobs…" autoFocus style={{
+        padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(245,243,239,0.2)',
+        background: 'rgba(245,243,239,0.06)', color: 'var(--cream)', fontSize: '16px', marginBottom: '14px', outline: 'none',
+      }} />
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {jobs.length === 0 ? (
+          <div style={{ color: 'var(--muted)', textAlign: 'center', marginTop: '30px', fontSize: '14px' }}>
+            {q.trim() ? 'No jobs match that search' : 'No jobs yet — start one with New Job'}
+          </div>
+        ) : jobs.map(j => (
+          <button key={j.id} onClick={() => onOpen(j.id)} style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+            padding: '16px', borderRadius: '14px', border: '1px solid rgba(245,243,239,0.14)',
+            background: 'rgba(245,243,239,0.05)', color: 'var(--cream)', cursor: 'pointer', textAlign: 'left',
+          }}>
+            <span style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.name}</div>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{j.category} &middot; {j.photoCount} photo{j.photoCount === 1 ? '' : 's'} &middot; {j.noteCount} note{j.noteCount === 1 ? '' : 's'}</div>
+            </span>
+            <span style={{ color: 'var(--ember)', fontSize: '22px', flexShrink: 0 }}>&rsaquo;</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CameraModal({ onClose }: { onClose: () => void }) {
   const webcamRef = useRef<Webcam>(null);
   const [facing, setFacing] = useState<'environment' | 'user'>('environment');
@@ -116,7 +169,7 @@ const STAGES = ['capture', 'draw', 'review'] as const;
 type Stage = typeof STAGES[number];
 const STAGE_LABEL: Record<Stage, string> = { capture: 'Capture', draw: 'Draw', review: 'Review' };
 
-function StageBar({ stage, setStage }: { stage: Stage; setStage: (s: Stage) => void }) {
+function StageBar({ stage, setStage, onHome }: { stage: Stage; setStage: (s: Stage) => void; onHome: () => void }) {
   const idx = STAGES.indexOf(stage);
   const next = STAGES[idx + 1];
   const tab = (s: Stage): CSSProperties => ({
@@ -132,6 +185,11 @@ function StageBar({ stage, setStage }: { stage: Stage; setStage: (s: Stage) => v
       background: 'var(--ink)', borderBottom: '1px solid rgba(245,243,239,0.12)',
       padding: '8px 12px', boxSizing: 'border-box',
     }}>
+      <button onClick={onHome} title="Home — start or switch jobs" style={{
+        flexShrink: 0, width: '40px', height: '40px', borderRadius: '10px', cursor: 'pointer',
+        border: '1px solid rgba(245,243,239,0.15)', background: 'rgba(245,243,239,0.05)',
+        color: 'var(--cream)', fontSize: '18px',
+      }}>🏠</button>
       <div style={{ display: 'flex', flex: 1, gap: '4px', background: 'rgba(245,243,239,0.05)', padding: '4px', borderRadius: '12px' }}>
         {STAGES.map(s => (
           <button key={s} onClick={() => setStage(s)} style={tab(s)}>{STAGE_LABEL[s]}</button>
@@ -177,6 +235,7 @@ function CanvasModeToggle({ onOpenCamera }: { onOpenCamera: () => void }) {
 
 export default function App() {
   const [showLauncher, setShowLauncher] = useState(true);
+  const [openPicker, setOpenPicker] = useState(false);
   const [stage, setStage] = useState<Stage>('capture');
   const [cameraOpen, setCameraOpen] = useState(false);
 
@@ -190,33 +249,46 @@ export default function App() {
   }, [stage, showLauncher]);
 
   const pickDoor = (door: 'new' | 'open' | 'just' | 'quick') => {
+    if (door === 'open') {
+      setOpenPicker(true);
+      return; // launcher stays until a job is picked (or cancelled)
+    }
     setStage(door === 'just' || door === 'quick' ? 'draw' : 'capture');
     setShowLauncher(false);
-    // let the app DOM paint before we trigger any app.ts flow
     setTimeout(() => {
-      if (door === 'just' || door === 'quick') {
-        document.getElementById('btn-skip-to-drawing')?.click();
+      if (door === 'new') {
+        window.NextLevel?.newJob();
+      } else if (door === 'just' || door === 'quick') {
+        window.NextLevel?.openSkipCategory();
       }
-      // 'new' / 'open': the sidebar underneath already handles these for now
     }, 60);
+  };
+
+  const openExistingJob = (id: string) => {
+    setStage('capture');
+    setOpenPicker(false);
+    setShowLauncher(false);
+    setTimeout(() => window.NextLevel?.openJob(id), 60);
+  };
+
+  const goHome = () => {
+    setOpenPicker(false);
+    setShowLauncher(true);
   };
 
   return (
     <>
       {showLauncher && <Launcher onPick={pickDoor} />}
+      {openPicker && <OpenJobPicker onOpen={openExistingJob} onCancel={() => setOpenPicker(false)} />}
       {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} />}
       <div id="app-shell">
-        {!showLauncher && <StageBar stage={stage} setStage={setStage} />}
+        {!showLauncher && <StageBar stage={stage} setStage={setStage} onHome={goHome} />}
         <div id="app">
       <aside id="sidebar">
         <div className="sidebar-header">
           <h2 style={{ fontSize: '26px', letterSpacing: '0.5px' }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
           <span id="sidebar-close" className="sidebar-close">&times;</span>
         </div>
-        <section className="sidebar-section">
-          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: 'var(--ember)', color: 'var(--ink)', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Start quick, jump to an existing job, or go full setup</div>
-        </section>
         <section className="sidebar-section stage-section s-capture" id="project-contact-section">
           <div className="section-title">Project & Contact</div>
           <input type="text" id="customer-name" placeholder="Customer Name" autoComplete="off" />
