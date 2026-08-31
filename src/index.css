@@ -3,33 +3,34 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .hidden { display: none !important; }
 :root {
-  --blue: #00274C;
-  --maize: #FFCB05;
+  --ink: #15120F;
+  --ember: #E8622C;
+  --cream: #F5F3EF;
   --bg: #f5f6f8;
   --panel: #fff;
   --border: #d1d5db;
   --text: #1a1a1a;
-  --muted: #6b7280;
+  --muted: #8A857E;
   --danger: #dc2626;
   --new-wall: #000;
   --exist-wall: #666;
   --demo-wall: #c00;
-  --accent: var(--blue);
+  --accent: var(--ink);
 }
 html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
 #app { display: flex; height: 100vh; width: 100vw; }
 
 /* ── Sidebar ─────────────────────────────────────── */
 #sidebar {
-  width: 280px; min-width: 280px; background: var(--blue); border-right: 1px solid rgba(255,255,255,0.15);
+  width: 280px; min-width: 280px; background: var(--ink); border-right: 1px solid rgba(255,255,255,0.15);
   display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
   transition: transform .2s ease;
   color: #fff;
 }
-.sidebar-header { padding: 16px 14px; font-weight: 800; font-size: 20px; color: var(--maize); border-bottom: 2px solid rgba(255,255,255,0.15); background: var(--blue); position: sticky; top: 0; z-index: 10; text-align: center; }
+.sidebar-header { padding: 16px 14px; font-weight: 800; font-size: 20px; color: var(--ember); border-bottom: 2px solid rgba(255,255,255,0.15); background: var(--ink); position: sticky; top: 0; z-index: 10; text-align: center; }
 .sidebar-header h2 { display: inline; }
 .sidebar-section { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
-.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--maize); margin-bottom: 6px; font-weight: 700; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--ember); margin-bottom: 6px; font-weight: 700; }
 
 #sidebar input[type="text"],
 #sidebar input[type="number"],
@@ -41,7 +42,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   font-size: 14px; background: rgba(255, 255, 255, 0.08); color: #fff; margin-bottom: 6px;
 }
 #sidebar input::placeholder, #sidebar textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
-#sidebar input:focus, #sidebar select:focus, #sidebar textarea:focus { outline: none; border-color: var(--maize); box-shadow: 0 0 0 2px rgba(255,203,5,.25); }
+#sidebar input:focus, #sidebar select:focus, #sidebar textarea:focus { outline: none; border-color: var(--ember); box-shadow: 0 0 0 2px rgba(232,98,44,.25); }
 
 .btn-row { display: flex; gap: 6px; }
 .btn-row .btn { flex: 1; }
@@ -60,11 +61,11 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .btn:active { transform: scale(.98); }
 .btn-sm { padding: 6px 10px; font-size: 13px; min-height: 32px; }
 .btn-block { width: 100%; }
-.btn-accent { background: var(--maize); color: var(--blue); border-color: var(--maize); font-weight: 700; }
-.btn-accent:hover { background: #e5b700; border-color: #e5b700; color: var(--blue); }
+.btn-accent { background: var(--ember); color: var(--ink); border-color: var(--ember); font-weight: 700; }
+.btn-accent:hover { background: #cf5623; border-color: #cf5623; color: var(--ink); }
 .btn-danger { background: rgba(220, 38, 38, 0.15); color: #ff8a8a; border-color: rgba(220, 38, 38, 0.4); }
 .btn-danger:hover { background: rgba(220, 38, 38, 0.3); }
-.btn.active { background: var(--maize); color: var(--blue); border-color: var(--maize); font-weight: 700; }
+.btn.active { background: var(--ember); color: var(--ink); border-color: var(--ember); font-weight: 700; }
 
 /* ── Pills ────────────────────────────────────────── */
 .pill-group { display: flex; gap: 0; flex-wrap: wrap; }
@@ -78,15 +79,15 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .pill:last-child { border-radius: 0 6px 6px 0; }
 .pill + .pill { border-left: 0; }
 .pill:hover { background: rgba(255, 255, 255, 0.15); }
-.pill.active { background: var(--maize); color: var(--blue); border-color: var(--maize); font-weight: 700; }
+.pill.active { background: var(--ember); color: var(--ink); border-color: var(--ember); font-weight: 700; }
 
 /* ── Project List ─────────────────────────────────── */
 .project-search-wrap { position: relative; }
-.project-list { list-style: none; max-height: 260px; overflow-y: auto; margin: 0; padding: 6px; display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--blue); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; box-shadow: 0 10px 28px rgba(0,0,0,0.4); z-index: 60; }
+.project-list { list-style: none; max-height: 260px; overflow-y: auto; margin: 0; padding: 6px; display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--ink); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; box-shadow: 0 10px 28px rgba(0,0,0,0.4); z-index: 60; }
 .project-list.open { display: block; }
 .project-list li { padding: 7px 10px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 36px; background: rgba(255, 255, 255, 0.08); color: #fff; }
 .project-list li:hover { background: rgba(255, 255, 255, 0.15); }
-.project-list li.active { background: var(--maize); border-color: var(--maize); color: var(--blue); font-weight: 700; }
+.project-list li.active { background: var(--ember); border-color: var(--ember); color: var(--ink); font-weight: 700; }
 .project-list .del-project { color: #ff8a8a; cursor: pointer; font-size: 16px; padding: 2px 4px; }
 .project-list .del-project:hover { background: rgba(220, 38, 38, 0.2); border-radius: 4px; }
 .project-list .project-cat { font-size: 10px; color: rgba(255, 255, 255, 0.7); margin-left: auto; white-space: nowrap; }
@@ -99,7 +100,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   min-height: 30px; background: rgba(255, 255, 255, 0.08); color: #fff;
 }
 .page-tab:hover { background: rgba(255, 255, 255, 0.15); }
-.page-tab.active { background: var(--maize); color: var(--blue); border-color: var(--maize); font-weight: 700; }
+.page-tab.active { background: var(--ember); color: var(--ink); border-color: var(--ember); font-weight: 700; }
 .page-tab .close-tab { font-size: 14px; opacity: .7; }
 .page-tab .close-tab:hover { opacity: 1; }
 
@@ -107,7 +108,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .takeoff-results { font-size: 13px; }
 .takeoff-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .takeoff-row:last-child { border-bottom: none; }
-.takeoff-row span:last-child { font-weight: 600; color: var(--maize); }
+.takeoff-row span:last-child { font-weight: 600; color: var(--ember); }
 
 /* ── Asset Palette ────────────────────────────────── */
 .asset-palette { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
@@ -116,7 +117,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   text-align: center; cursor: grab; font-size: 11px; background: rgba(255, 255, 255, 0.08); color: #fff;
   user-select: none; -webkit-user-select: none;
 }
-.asset-item:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--maize); }
+.asset-item:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--ember); }
 .asset-item:active { cursor: grabbing; }
 
 /* ── Main Area ────────────────────────────────────── */
@@ -149,7 +150,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .voice-btn {
   position: fixed; bottom: 24px; right: 24px; z-index: 100;
   width: 60px; height: 60px; border-radius: 50%;
-  background: var(--blue); color: var(--maize); border: none;
+  background: var(--ink); color: var(--ember); border: none;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(0,0,0,.3); cursor: pointer;
   transition: background .2s, transform .15s;
@@ -160,7 +161,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .voice-label { display: none; }
 .voice-status {
   position: fixed; bottom: 92px; right: 24px; z-index: 100;
-  background: var(--blue); color: #fff; padding: 6px 14px; border-radius: 20px;
+  background: var(--ink); color: #fff; padding: 6px 14px; border-radius: 20px;
   font-size: 13px; display: flex; align-items: center; gap: 8px;
 }
 .voice-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); animation: pulse 1s infinite; }
@@ -178,7 +179,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   box-shadow: 0 20px 60px rgba(0,0,0,.3);
 }
 .modal-help { max-width: 560px; }
-.modal-title { font-size: 18px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.modal-title { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
 .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
 .modal-body { margin-bottom: 16px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
@@ -187,10 +188,10 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 /* ── Help Modal ───────────────────────────────────── */
 .help-body { max-height: 55vh; overflow-y: auto; }
 .help-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.help-link { padding: 5px 10px; background: #f0f1f3; border-radius: 6px; font-size: 12px; color: var(--blue); text-decoration: none; cursor: pointer; min-height: 30px; display: flex; align-items: center; }
-.help-link:hover { background: var(--maize); }
+.help-link { padding: 5px 10px; background: #f0f1f3; border-radius: 6px; font-size: 12px; color: var(--ink); text-decoration: none; cursor: pointer; min-height: 30px; display: flex; align-items: center; }
+.help-link:hover { background: var(--ember); }
 .help-section { margin-bottom: 16px; scroll-margin-top: 60px; }
-.help-section h3 { font-size: 15px; color: var(--blue); margin-bottom: 8px; border-bottom: 2px solid var(--maize); padding-bottom: 4px; }
+.help-section h3 { font-size: 15px; color: var(--ink); margin-bottom: 8px; border-bottom: 2px solid var(--ember); padding-bottom: 4px; }
 .help-section p, .help-section li { font-size: 13px; line-height: 1.5; margin-bottom: 6px; }
 .help-section ol, .help-section ul { padding-left: 20px; }
 .help-table { width: 100%; border-collapse: collapse; }
@@ -204,7 +205,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   padding: 14px; width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
 }
 .wall-edit-panel.hidden { display: none; }
-.wall-edit-title { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 10px; }
+.wall-edit-title { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
 #wall-edit-panel select,
 #wall-edit-panel input,
 #opening-edit-panel select,
@@ -222,7 +223,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 /* ── Toast ────────────────────────────────────────── */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--blue); color: #fff; padding: 10px 20px; border-radius: 8px;
+  background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 8px;
   font-size: 14px; z-index: 2000; pointer-events: none;
 }
 .toast.hidden { display: none; }
@@ -261,7 +262,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--maize);
+  color: var(--ember);
   letter-spacing: 0.5px;
   margin: 8px 0 4px 0;
 }
@@ -289,12 +290,12 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 }
 .asset-item-btn:hover {
   background: rgba(255, 255, 255, 0.18);
-  border-color: var(--maize);
+  border-color: var(--ember);
 }
 .asset-item-btn.active {
-  background: var(--maize);
-  color: var(--blue);
-  border-color: var(--maize);
+  background: var(--ember);
+  color: var(--ink);
+  border-color: var(--ember);
   font-weight: 700;
 }
 .asset-item-title {
@@ -309,7 +310,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 }
 
 /* ── Sidebar Close ────────────────────────────────── */
-.sidebar-close { cursor: pointer; font-size: 24px; padding: 4px 8px; color: var(--maize); display: none; line-height: 1; border-radius: 4px; }
+.sidebar-close { cursor: pointer; font-size: 24px; padding: 4px 8px; color: var(--ember); display: none; line-height: 1; border-radius: 4px; }
 .sidebar-close:hover { background: rgba(255,255,255,0.15); }
 
 /* ── Desktop & Mobile Responsive Sidebar ───────────── */
@@ -410,7 +411,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   border: 1px solid rgba(255,255,255,0.15); transition: all 0.2s ease;
 }
 .wizard-step-indicator.active {
-  background: var(--maize); color: var(--blue); border-color: var(--maize);
+  background: var(--ember); color: var(--ink); border-color: var(--ember);
 }
 .wizard-step-indicator.completed {
   background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.4);
@@ -422,10 +423,10 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   transition: all 0.15s ease; user-select: none;
 }
 .wiz-cat-card:hover {
-  background: rgba(255,255,255,0.12); border-color: var(--maize); transform: translateY(-2px);
+  background: rgba(255,255,255,0.12); border-color: var(--ember); transform: translateY(-2px);
 }
 .wiz-cat-card.active {
-  background: rgba(255,203,5,0.15); border-color: var(--maize); box-shadow: 0 0 12px rgba(255,203,5,0.25);
+  background: rgba(232,98,44,0.15); border-color: var(--ember); box-shadow: 0 0 12px rgba(232,98,44,0.25);
 }
 
 /* ── Quick Actions Radial Menu ───────────────────── */
@@ -447,11 +448,11 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 36px; height: 36px;
-  background: var(--blue);
-  border: 2px solid var(--maize);
+  background: var(--ink);
+  border: 2px solid var(--ember);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: var(--maize);
+  color: var(--ember);
   font-size: 14px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
@@ -459,7 +460,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   position: absolute;
   width: 42px; height: 42px;
   background: #ffffff;
-  border: 2px solid var(--blue);
+  border: 2px solid var(--ink);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
@@ -468,7 +469,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   font-size: 18px;
 }
 .qa-btn:hover {
-  background: var(--maize);
+  background: var(--ember);
   transform: scale(1.15);
   border-color: #d97706;
 }
