@@ -4880,4 +4880,42 @@ export function initNextLevel() {
   setInterval(() => {
     save();
   }, 30000);
+
+  // ── Bridge for the React launcher/hub ────────────────────────────────
+  // Lets the launcher's New/Open doors drive real project actions that live
+  // inside this closure, instead of clicking hidden DOM buttons.
+  (window as any).NextLevel = {
+    newJob(): string {
+      const stamp = new Date().toLocaleDateString([], { month: 'numeric', day: 'numeric' });
+      const p = newProject(`New Job — ${stamp}`);
+      projects.push(p);
+      currentProjectId = p.id;
+      currentPageIdx = 0;
+      selectedWallIdx = -1;
+      save();
+      renderSidebar();
+      render();
+      return p.id;
+    },
+    listJobs(): Array<{ id: string; name: string; category: string; photoCount: number; noteCount: number }> {
+      return projects.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        photoCount: p.photos?.length || 0,
+        noteCount: p.pages.reduce((s, pg) => s + (pg.notes?.length || 0), 0),
+      }));
+    },
+    openJob(id: string): void {
+      const p = projects.find(x => x.id === id);
+      if (!p) return;
+      currentProjectId = p.id;
+      currentPageIdx = 0;
+      selectedWallIdx = -1;
+      save();
+      renderSidebar();
+      render();
+    },
+    openSkipCategory(): void { openSkipCategoryModal(); },
+  };
 }
