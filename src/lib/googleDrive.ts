@@ -142,9 +142,45 @@ async function findFile(accessToken: string, folderId: string, fileName: string)
   return json.files?.[0]?.id ?? null;
 }
 
+// Resolves the backup folder by NAME in whichever account is currently
+// connected, creating it if it doesn't exist yet — instead of a hardcoded
+// folder ID that only exists in one specific person's Drive. That hardcoded
+// approach broke the moment anyone other than the original account
+// connected: their drive.file-scoped token has zero access to a folder ID
+// it didn't create, so every save/restore would just fail for them. Cached
+// in-memory per session so repeated backups don't re-search every time.
+const folderIdCache = new Map<string, string>();
+async function findOrCreateFolder(accessToken: string, folderName: string): Promise<string> {
+  const cached = folderIdCache.get(folderName);
+  if (cached) return cached;
+
+  const escaped = folderName.replace(/'/g, "\\'");
+  const q = encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and name='${escaped}' and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Drive folder lookup failed (${res.status})`);
+  const json = await res.json();
+  let folderId: string | undefined = json.files?.[0]?.id;
+
+  if (!folderId) {
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' }),
+    });
+    if (!createRes.ok) throw new Error(`Drive folder create failed (${createRes.status})`);
+    const created = await createRes.json();
+    folderId = created.id;
+  }
+
+  folderIdCache.set(folderName, folderId!);
+  return folderId!;
+}
+
 export interface DriveBackupConfig {
   clientId: string;
-  folderId: string;
+  folderName: string;
   fileName: string;
 }
 
@@ -155,9 +191,10 @@ export interface DriveSaveResult {
 
 export async function saveToDrive(cfg: DriveBackupConfig, data: unknown): Promise<DriveSaveResult> {
   const accessToken = await ensureToken(cfg.clientId);
-  const existingId = await findFile(accessToken, cfg.folderId, cfg.fileName);
+  const folderId = await findOrCreateFolder(accessToken, cfg.folderName);
+  const existingId = await findFile(accessToken, folderId, cfg.fileName);
   const content = JSON.stringify(data, null, 2);
-  const metadata = existingId ? { name: cfg.fileName } : { name: cfg.fileName, parents: [cfg.folderId] };
+  const metadata = existingId ? { name: cfg.fileName } : { name: cfg.fileName, parents: [folderId] };
 
   const boundary = 'gdrive_backup_boundary_' + Math.random().toString(36).slice(2);
   const body =
@@ -184,7 +221,8 @@ export async function saveToDrive(cfg: DriveBackupConfig, data: unknown): Promis
 
 export async function loadFromDrive<T = unknown>(cfg: DriveBackupConfig): Promise<T | null> {
   const accessToken = await ensureToken(cfg.clientId);
-  const fileId = await findFile(accessToken, cfg.folderId, cfg.fileName);
+  const folderId = await findOrCreateFolder(accessToken, cfg.folderName);
+  const fileId = await findFile(accessToken, folderId, cfg.fileName);
   if (!fileId) return null;
   const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
     headers: { Authorization: `Bearer ${accessToken}` },

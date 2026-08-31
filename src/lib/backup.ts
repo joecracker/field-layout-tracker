@@ -7,15 +7,17 @@ import {
   type DriveBackupConfig,
 } from './googleDrive';
 
-// "Apps/Field Layout Tracker/backups" in Tim's Drive (see GOOGLE_DRIVE_SETUP.md to change).
-const FOLDER_ID = '13Mv58chU7IWLIUJ0iMYUEYyoUy5-_SGV';
+// Auto-created (or found) by name inside whichever Google account is
+// connected — no longer a hardcoded folder ID, since that only worked for
+// the one account it was originally created in. See GOOGLE_DRIVE_SETUP.md.
+const FOLDER_NAME = 'Next Level Backups';
 const FILE_NAME = 'nextlevel-projects-backup.json';
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export const driveConfigured = Boolean(CLIENT_ID);
 
 function cfg(): DriveBackupConfig {
-  return { clientId: CLIENT_ID, folderId: FOLDER_ID, fileName: FILE_NAME };
+  return { clientId: CLIENT_ID, folderName: FOLDER_NAME, fileName: FILE_NAME };
 }
 
 export { isDriveConnected, disconnectDrive };
