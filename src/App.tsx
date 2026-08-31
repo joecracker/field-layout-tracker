@@ -45,14 +45,62 @@ function Launcher({ onPick }: { onPick: (door: 'new' | 'open' | 'just' | 'quick'
   );
 }
 
+const STAGES = ['capture', 'draw', 'review'] as const;
+type Stage = typeof STAGES[number];
+const STAGE_LABEL: Record<Stage, string> = { capture: 'Capture', draw: 'Draw', review: 'Review' };
+
+function StageBar({ stage, setStage }: { stage: Stage; setStage: (s: Stage) => void }) {
+  const idx = STAGES.indexOf(stage);
+  const next = STAGES[idx + 1];
+  const tab = (s: Stage): CSSProperties => ({
+    flex: 1, padding: '10px 8px', fontSize: '14px', fontWeight: 800, letterSpacing: '0.3px',
+    cursor: 'pointer', border: 'none', borderRadius: '10px',
+    background: s === stage ? 'var(--ember)' : 'transparent',
+    color: s === stage ? 'var(--ink)' : 'var(--muted)',
+    transition: 'background 0.12s ease, color 0.12s ease',
+  });
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0,
+      background: 'var(--ink)', borderBottom: '1px solid rgba(245,243,239,0.12)',
+      padding: '8px 12px', boxSizing: 'border-box',
+    }}>
+      <div style={{ display: 'flex', flex: 1, gap: '4px', background: 'rgba(245,243,239,0.05)', padding: '4px', borderRadius: '12px' }}>
+        {STAGES.map(s => (
+          <button key={s} onClick={() => setStage(s)} style={tab(s)}>{STAGE_LABEL[s]}</button>
+        ))}
+      </div>
+      {next ? (
+        <button onClick={() => setStage(next)} style={{
+          flexShrink: 0, padding: '10px 16px', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
+          border: '2px solid var(--ember)', borderRadius: '10px', background: 'transparent', color: 'var(--ember)',
+        }}>{STAGE_LABEL[next]} &rarr;</button>
+      ) : (
+        <button disabled style={{
+          flexShrink: 0, padding: '10px 16px', fontSize: '14px', fontWeight: 800,
+          border: '2px solid rgba(245,243,239,0.15)', borderRadius: '10px', background: 'transparent',
+          color: 'var(--muted)', opacity: 0.6,
+        }}>Finish</button>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [showLauncher, setShowLauncher] = useState(true);
+  const [stage, setStage] = useState<Stage>('capture');
 
   useEffect(() => {
     initNextLevel();
   }, []);
 
+  useEffect(() => {
+    const sb = document.getElementById('sidebar');
+    if (sb) sb.dataset.stage = stage;
+  }, [stage, showLauncher]);
+
   const pickDoor = (door: 'new' | 'open' | 'just' | 'quick') => {
+    setStage(door === 'just' || door === 'quick' ? 'draw' : 'capture');
     setShowLauncher(false);
     // let the app DOM paint before we trigger any app.ts flow
     setTimeout(() => {
@@ -66,7 +114,9 @@ export default function App() {
   return (
     <>
       {showLauncher && <Launcher onPick={pickDoor} />}
-      <div id="app">
+      <div id="app-shell">
+        {!showLauncher && <StageBar stage={stage} setStage={setStage} />}
+        <div id="app">
       <aside id="sidebar">
         <div className="sidebar-header">
           <h2 style={{ fontSize: '26px', letterSpacing: '0.5px' }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
@@ -76,7 +126,7 @@ export default function App() {
           <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: 'var(--ember)', color: 'var(--ink)', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Start quick, jump to an existing job, or go full setup</div>
         </section>
-        <section className="sidebar-section" id="project-contact-section">
+        <section className="sidebar-section stage-section s-capture" id="project-contact-section">
           <div className="section-title">Project & Contact</div>
           <input type="text" id="customer-name" placeholder="Customer Name" autoComplete="off" />
           <input type="tel" id="customer-phone" placeholder="Phone Number" autoComplete="off" style={{ marginTop: '6px' }} />
@@ -91,7 +141,7 @@ export default function App() {
             <ul id="project-list" className="project-list"></ul>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-draw">
           <button id="btn-pages-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>📄 Pages</span>
             <span id="pages-drawer-arrow">&#9660;</span>
@@ -103,7 +153,7 @@ export default function App() {
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginTop: '4px' }}>Double-tap a page tab to rename it</div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-draw">
           <button id="btn-view-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>👁️ View & Display</span>
             <span id="view-drawer-arrow">&#9660;</span>
@@ -125,7 +175,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-capture">
           <button id="btn-category-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>🏷️ Project Category</span>
             <span id="category-drawer-arrow">&#9660;</span>
@@ -141,7 +191,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-capture">
           <button id="btn-scope-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>📐 Scope of Work</span>
             <span id="scope-drawer-arrow">&#9660;</span>
@@ -155,7 +205,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-draw">
           <button id="btn-tools-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>🛠️ Tools & Wall Types</span>
             <span id="tools-drawer-arrow">&#9660;</span>
@@ -177,7 +227,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-capture s-draw">
           <button id="btn-openings-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>🚪 Openings (Doors & Windows)</span>
             <span id="openings-drawer-arrow">&#9660;</span>
@@ -189,7 +239,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-draw">
           <button id="btn-assets-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>📦 Assets & Catalog</span>
             <span id="assets-drawer-arrow">&#9660;</span>
@@ -203,7 +253,7 @@ export default function App() {
             <div id="asset-palette" className="asset-palette"></div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-capture">
           <button id="btn-measurements-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>📏 Measurements & Specs</span>
             <span id="measurements-drawer-arrow">&#9660;</span>
@@ -223,7 +273,7 @@ export default function App() {
             </label>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-review">
           <button id="btn-takeoff-drawer" className="btn btn-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', fontWeight: '600', padding: '8px 12px', cursor: 'pointer' }}>
             <span>📋 Takeoff Summary</span>
             <span id="takeoff-drawer-arrow">&#9660;</span>
@@ -256,7 +306,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-capture">
           <div className="section-title">Notes & Photos</div>
           <textarea id="project-notes" rows={3} placeholder="Field notes & observations..."></textarea>
           <button id="btn-drop-pin-tool" className="btn btn-sm btn-block" style={{ marginTop: '6px', marginBottom: '6px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)', cursor: 'pointer' }}>📌 Drop Note Pin on Canvas</button>
@@ -274,7 +324,7 @@ export default function App() {
             <div id="storage-meter" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '8px', textAlign: 'center' }}></div>
           </div>
         </section>
-        <section className="sidebar-section">
+        <section className="sidebar-section stage-section s-review">
           <button id="btn-export-boss" className="btn btn-block btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)', marginBottom: '6px' }}>📋 Send to Laptop (Boss Report)</button>
           <div className="btn-row" style={{ marginTop: '6px' }}>
             <button id="btn-send-job" className="btn btn-sm btn-block" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Send this one job — walls, photos, notes, everything — to someone else, by text/email/AirDrop/whatever's easiest">📤 Send This Job</button>
@@ -323,7 +373,7 @@ export default function App() {
         </div>
         <div id="canvas-wrap">
           <canvas id="floorplan"></canvas>
-          <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--blue,#1e3a8a)', color: '#fff', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>🔖</button>
+          <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--ember)', color: 'var(--ink)', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>🔖</button>
           <div id="reference-rail" className="hidden" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '280px', maxWidth: '85vw', background: 'rgba(20,20,26,0.97)', zIndex: 65, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 16px rgba(0,0,0,0.35)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.15)', flex: 'none' }}>
               <span style={{ fontWeight: 700, color: '#fff', fontSize: '13px' }}>🔖 Reference</span>
@@ -923,6 +973,7 @@ export default function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
     </>
   );
