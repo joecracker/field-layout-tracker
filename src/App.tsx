@@ -1,5 +1,72 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState, useRef, useCallback, type CSSProperties } from 'react';
+import Webcam from 'react-webcam';
 import { initNextLevel } from './app';
+
+// Live-camera modal. Works on desktop (Surface) AND phones via getUserMedia,
+// unlike the native <input capture> which desktop browsers ignore.
+// On snap: feed the photo into the existing #photo-input-camera pipeline
+// (Photo Booth markup → savePhotoBlob → IndexedDB) — zero app.ts changes.
+function CameraModal({ onClose }: { onClose: () => void }) {
+  const webcamRef = useRef<Webcam>(null);
+  const [facing, setFacing] = useState<'environment' | 'user'>('environment');
+  const [err, setErr] = useState<string | null>(null);
+
+  const snap = useCallback(() => {
+    const src = webcamRef.current?.getScreenshot();
+    if (!src) return;
+    fetch(src).then(r => r.blob()).then(blob => {
+      const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const input = document.getElementById('photo-input-camera') as HTMLInputElement | null;
+      if (input) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      onClose();
+    });
+  }, [onClose]);
+
+  const round = (bg: string): CSSProperties => ({
+    width: '56px', height: '56px', borderRadius: '50%', border: 'none', cursor: 'pointer',
+    background: bg, fontSize: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+  });
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 10000, background: '#000',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {err ? (
+        <div style={{ color: 'var(--cream)', textAlign: 'center', padding: '24px', maxWidth: '360px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📷🚫</div>
+          <div style={{ fontSize: '15px', lineHeight: 1.5 }}>{err}</div>
+          <button onClick={onClose} style={{ marginTop: '20px', padding: '12px 24px', borderRadius: '10px', border: 'none', background: 'var(--ember)', color: 'var(--ink)', fontWeight: 800, fontSize: '15px', cursor: 'pointer' }}>Close</button>
+        </div>
+      ) : (
+        <>
+          <Webcam
+            ref={webcamRef}
+            {...({
+              audio: false,
+              screenshotFormat: 'image/jpeg',
+              screenshotQuality: 0.92,
+              videoConstraints: { facingMode: facing },
+              onUserMediaError: () => setErr('Could not open the camera. Check that the browser has camera permission, then try again.'),
+              style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' },
+            } as any)}
+          />
+          <div style={{ position: 'absolute', bottom: '32px', display: 'flex', alignItems: 'center', gap: '36px' }}>
+            <button onClick={onClose} style={round('rgba(255,255,255,0.15)')} title="Cancel">✕</button>
+            <button onClick={snap} style={{ ...round('var(--ember)'), width: '76px', height: '76px', fontSize: '32px' }} title="Take photo">📸</button>
+            <button onClick={() => setFacing(f => f === 'environment' ? 'user' : 'environment')} style={round('rgba(255,255,255,0.15)')} title="Flip camera">🔄</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function Launcher({ onPick }: { onPick: (door: 'new' | 'open' | 'just' | 'quick') => void }) {
   const doorBtn: CSSProperties = {
@@ -86,7 +153,7 @@ function StageBar({ stage, setStage }: { stage: Stage; setStage: (s: Stage) => v
   );
 }
 
-function CanvasModeToggle() {
+function CanvasModeToggle({ onOpenCamera }: { onOpenCamera: () => void }) {
   // Draw is the resting state (the canvas IS the drawing surface). Camera is a
   // momentary trip: fire the existing native-camera input → Photo Booth markup →
   // back to the canvas. Reused by Capture and Quick Draw.
@@ -103,7 +170,7 @@ function CanvasModeToggle() {
   return (
     <div style={{ position: 'absolute', left: '12px', bottom: '12px', zIndex: 60, display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={btn(true)}>✏️<span style={lbl}>DRAW</span></div>
-      <div onClick={() => document.getElementById('photo-input-camera')?.click()} style={btn(false)}>📷<span style={lbl}>PHOTO</span></div>
+      <div onClick={onOpenCamera} style={btn(false)}>📷<span style={lbl}>PHOTO</span></div>
     </div>
   );
 }
@@ -111,6 +178,7 @@ function CanvasModeToggle() {
 export default function App() {
   const [showLauncher, setShowLauncher] = useState(true);
   const [stage, setStage] = useState<Stage>('capture');
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   useEffect(() => {
     initNextLevel();
@@ -136,6 +204,7 @@ export default function App() {
   return (
     <>
       {showLauncher && <Launcher onPick={pickDoor} />}
+      {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} />}
       <div id="app-shell">
         {!showLauncher && <StageBar stage={stage} setStage={setStage} />}
         <div id="app">
@@ -395,7 +464,7 @@ export default function App() {
         </div>
         <div id="canvas-wrap">
           <canvas id="floorplan"></canvas>
-          {stage !== 'review' && <CanvasModeToggle />}
+          {stage !== 'review' && <CanvasModeToggle onOpenCamera={() => setCameraOpen(true)} />}
           <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--ember)', color: 'var(--ink)', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>🔖</button>
           <div id="reference-rail" className="hidden" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '280px', maxWidth: '85vw', background: 'rgba(20,20,26,0.97)', zIndex: 65, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 16px rgba(0,0,0,0.35)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.15)', flex: 'none' }}>
