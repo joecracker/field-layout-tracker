@@ -683,8 +683,49 @@ export function initNextLevel() {
   function save(){
     if(!currentProjectId) return;
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }catch(e){}
+    maybeAutoBackup();
   }
   function saveAndRender(){ save(); render(); }
+
+  // This device's local storage IS the real working copy — Drive is purely
+  // disaster recovery for "the device died / cache got wiped," not live
+  // sync. No reason to hit the Drive API on every keystroke for that; a
+  // daily check is plenty. (Bump AUTO_BACKUP_INTERVAL_MS if weekly's
+  // preferred instead.)
+  const LAST_DRIVE_BACKUP_KEY = 'nextlevel_last_drive_backup';
+  const AUTO_BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // once a day
+  let driveAutoBackupTimer: ReturnType<typeof setTimeout> | null = null;
+  function maybeAutoBackup(){
+    if(!isDriveConnected()) return;
+    const last = parseInt(localStorage.getItem(LAST_DRIVE_BACKUP_KEY) || '0', 10);
+    if(Date.now() - last < AUTO_BACKUP_INTERVAL_MS) return; // not due yet
+    if(driveAutoBackupTimer) clearTimeout(driveAutoBackupTimer);
+    driveAutoBackupTimer = setTimeout(async () => {
+      try{
+        const hydrated = await hydrateProjects(projects);
+        await saveBackup(hydrated);
+        localStorage.setItem(LAST_DRIVE_BACKUP_KEY, Date.now().toString());
+        const el = document.getElementById('drive-status');
+        if(el){ el.textContent = 'Auto-backed up just now'; el.style.color = ''; }
+      }catch(e){
+        // Silent on failure — don't interrupt fieldwork over a backup
+        // hiccup. The manual Save to Drive button still works on demand.
+      }
+    }, 8000); // small debounce so a burst of edits right at the daily mark doesn't double-fire
+  }
+
+  // Visible nudge when there's real work on this device that ISN'T backed
+  // up anywhere — shown any time the sidebar refreshes, so it can't be
+  // missed by just not opening the Drive section.
+  function updateDriveBackupNudge(){
+    const el = document.getElementById('drive-status');
+    if(!el) return;
+    if(!driveConfigured || isDriveConnected()) return; // configured+connected messages are handled elsewhere
+    if(projects.length > 0){
+      el.textContent = '⚠️ Not backed up — connect Google Drive below';
+      el.style.color = '#fca5a5';
+    }
+  }
 
   function newPage(name?: string): Page {
     return {
@@ -2039,6 +2080,7 @@ export function initNextLevel() {
     // that should be competing for attention. This section reappears the
     // moment a project actually exists.
     document.getElementById('project-contact-section')?.classList.toggle('hidden', !p);
+    updateDriveBackupNudge();
 
     const custInput = document.getElementById('customer-name') as HTMLInputElement;
     if (custInput) custInput.value = p ? p.customer || p.name : '';
@@ -3718,7 +3760,7 @@ export function initNextLevel() {
 
     function setDriveStatus(msg: string){
       const el = document.getElementById('drive-status');
-      if(el) el.textContent = msg;
+      if(el){ el.textContent = msg; el.style.color = ''; }
     }
     if(!driveConfigured){
       setDriveStatus('Not configured (missing Client ID) — see GOOGLE_DRIVE_SETUP.md');
@@ -3740,6 +3782,7 @@ export function initNextLevel() {
       try {
         const hydrated = await hydrateProjects(projects); // include photo bytes in the backup
         await saveBackup(hydrated);
+        localStorage.setItem(LAST_DRIVE_BACKUP_KEY, Date.now().toString());
         setDriveStatus('Saved to Google Drive just now');
         toast('Saved to Google Drive');
       } catch(err){
