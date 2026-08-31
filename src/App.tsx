@@ -1,13 +1,72 @@
-import { useEffect } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { initNextLevel } from './app';
 
+function Launcher({ onPick }: { onPick: (door: 'new' | 'open' | 'just' | 'quick') => void }) {
+  const doorBtn: CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: '16px', width: '100%',
+    padding: '20px 24px', borderRadius: '16px', fontSize: '20px', fontWeight: 800,
+    letterSpacing: '0.3px', cursor: 'pointer', textAlign: 'left',
+    border: '2px solid rgba(245,243,239,0.15)', background: 'rgba(245,243,239,0.04)',
+    color: 'var(--cream)', transition: 'transform 0.08s ease, background 0.15s ease',
+  };
+  const iconWrap: CSSProperties = { fontSize: '30px', width: '40px', textAlign: 'center', flexShrink: 0 };
+  const sub: CSSProperties = { fontSize: '12px', fontWeight: 500, color: 'var(--muted)', marginTop: '2px' };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--ink)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '24px', boxSizing: 'border-box', overflowY: 'auto',
+    }}>
+      <div style={{ fontSize: '42px', fontWeight: 500, letterSpacing: '0.5px', marginBottom: '4px' }}>
+        <span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span>
+      </div>
+      <div style={{ fontSize: '12px', letterSpacing: '3px', color: 'var(--muted)', marginBottom: '40px' }}>MEASURE &middot; DESIGN &middot; DELIVER</div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', maxWidth: '440px' }}>
+        <button onClick={() => onPick('new')} style={{ ...doorBtn, border: 'none', background: 'var(--ember)', color: 'var(--ink)' }}>
+          <span style={iconWrap}>🔨</span>
+          <span>New Job<div style={{ ...sub, color: 'rgba(21,18,15,0.65)' }}>Start capturing a fresh job</div></span>
+        </button>
+        <button onClick={() => onPick('open')} style={doorBtn}>
+          <span style={iconWrap}>📂</span>
+          <span>Open Job<div style={sub}>Pick up where you left off</div></span>
+        </button>
+        <button onClick={() => onPick('just')} style={doorBtn}>
+          <span style={iconWrap}>✏️</span>
+          <span>Just Draw<div style={sub}>Already have the info — go straight to the layout</div></span>
+        </button>
+        <button onClick={() => onPick('quick')} style={doorBtn}>
+          <span style={iconWrap}>⚡</span>
+          <span>Quick Draw<div style={sub}>Grab a fast one — photo or sketch, in and out</div></span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [showLauncher, setShowLauncher] = useState(true);
+
   useEffect(() => {
     initNextLevel();
   }, []);
 
+  const pickDoor = (door: 'new' | 'open' | 'just' | 'quick') => {
+    setShowLauncher(false);
+    // let the app DOM paint before we trigger any app.ts flow
+    setTimeout(() => {
+      if (door === 'just' || door === 'quick') {
+        document.getElementById('btn-skip-to-drawing')?.click();
+      }
+      // 'new' / 'open': the sidebar underneath already handles these for now
+    }, 60);
+  };
+
   return (
-    <div id="app">
+    <>
+      {showLauncher && <Launcher onPick={pickDoor} />}
+      <div id="app">
       <aside id="sidebar">
         <div className="sidebar-header">
           <h2 style={{ fontSize: '26px', letterSpacing: '0.5px' }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
@@ -865,5 +924,6 @@ export default function App() {
         </div>
       </div>
     </div>
+    </>
   );
 }
