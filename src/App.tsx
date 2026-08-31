@@ -86,6 +86,28 @@ function StageBar({ stage, setStage }: { stage: Stage; setStage: (s: Stage) => v
   );
 }
 
+function CanvasModeToggle() {
+  // Draw is the resting state (the canvas IS the drawing surface). Camera is a
+  // momentary trip: fire the existing native-camera input → Photo Booth markup →
+  // back to the canvas. Reused by Capture and Quick Draw.
+  const btn = (active: boolean): CSSProperties => ({
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+    width: '58px', padding: '9px 0', borderRadius: '12px', cursor: 'pointer',
+    fontSize: '22px', fontWeight: 700, lineHeight: 1,
+    border: active ? 'none' : '1px solid rgba(255,255,255,0.18)',
+    background: active ? 'var(--ember)' : 'rgba(21,18,15,0.82)',
+    color: active ? 'var(--ink)' : 'var(--cream)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+  });
+  const lbl: CSSProperties = { fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px' };
+  return (
+    <div style={{ position: 'absolute', left: '12px', bottom: '12px', zIndex: 60, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={btn(true)}>✏️<span style={lbl}>DRAW</span></div>
+      <div onClick={() => document.getElementById('photo-input-camera')?.click()} style={btn(false)}>📷<span style={lbl}>PHOTO</span></div>
+    </div>
+  );
+}
+
 export default function App() {
   const [showLauncher, setShowLauncher] = useState(true);
   const [stage, setStage] = useState<Stage>('capture');
@@ -373,6 +395,7 @@ export default function App() {
         </div>
         <div id="canvas-wrap">
           <canvas id="floorplan"></canvas>
+          {stage !== 'review' && <CanvasModeToggle />}
           <button id="reference-rail-tab" title="Reference: Notes, Photos, Measurements" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60, background: 'var(--ember)', color: 'var(--ink)', border: 'none', borderRadius: '8px 0 0 8px', padding: '14px 6px', fontSize: '18px', cursor: 'pointer', boxShadow: '-2px 0 8px rgba(0,0,0,0.25)' }}>🔖</button>
           <div id="reference-rail" className="hidden" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '280px', maxWidth: '85vw', background: 'rgba(20,20,26,0.97)', zIndex: 65, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 16px rgba(0,0,0,0.35)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.15)', flex: 'none' }}>
