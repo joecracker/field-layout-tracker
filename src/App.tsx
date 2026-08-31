@@ -10,11 +10,11 @@ export default function App() {
     <div id="app">
       <aside id="sidebar">
         <div className="sidebar-header">
-          <h2>Next Level</h2>
+          <h2 style={{ fontSize: '26px', letterSpacing: '0.5px' }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
           <span id="sidebar-close" className="sidebar-close">&times;</span>
         </div>
         <section className="sidebar-section">
-          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: '#f4b400', color: '#1a1200', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
+          <button id="btn-skip-to-drawing" className="btn btn-block" style={{ background: 'var(--ember)', color: 'var(--ink)', border: 'none', fontWeight: 800, fontSize: '15px', padding: '14px', letterSpacing: '0.3px' }}>+ New / Open Project</button>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', marginTop: '4px' }}>Start quick, jump to an existing job, or go full setup</div>
         </section>
         <section className="sidebar-section" id="project-contact-section">
@@ -24,7 +24,7 @@ export default function App() {
           <input type="email" id="customer-email" placeholder="Email Address" autoComplete="off" style={{ marginTop: '6px' }} />
           <input type="text" id="customer-address" placeholder="Job Site Address" autoComplete="off" style={{ marginTop: '6px' }} />
           <div className="btn-row" style={{ marginTop: '6px' }}>
-            <button id="btn-open-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none' }}>🪄 Wizard</button>
+            <button id="btn-open-wizard" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)', border: 'none' }}>🪄 Wizard</button>
             <button id="btn-save-project" className="btn btn-sm">Save</button>
           </div>
           <div className="project-search-wrap" style={{ marginTop: '12px' }}>
@@ -56,11 +56,11 @@ export default function App() {
             </div>
             <div>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: '#cbd5e1', marginBottom: '6px' }}>
-                <input type="checkbox" id="show-dimensions-toggle" defaultChecked style={{ accentColor: '#2563eb', width: '14px', height: '14px', cursor: 'pointer' }} />
+                <input type="checkbox" id="show-dimensions-toggle" defaultChecked style={{ accentColor: 'var(--ember)', width: '14px', height: '14px', cursor: 'pointer' }} />
                 <span>Show Dimensions</span>
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: '#cbd5e1' }}>
-                <input type="checkbox" id="smart-snapping-toggle" defaultChecked style={{ accentColor: '#2563eb', width: '14px', height: '14px', cursor: 'pointer' }} />
+                <input type="checkbox" id="smart-snapping-toggle" defaultChecked style={{ accentColor: 'var(--ember)', width: '14px', height: '14px', cursor: 'pointer' }} />
                 <span>Smart Wall Snapping</span>
               </label>
             </div>
@@ -171,7 +171,7 @@ export default function App() {
           </button>
           <div id="takeoff-drawer-content" className="hidden" style={{ marginTop: '8px' }}>
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: '6px' }}>
-              <button id="btn-to-tab-quantities" className="btn btn-sm" style={{ flex: 1, fontSize: '11px', padding: '4px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Quantities</button>
+              <button id="btn-to-tab-quantities" className="btn btn-sm" style={{ flex: 1, fontSize: '11px', padding: '4px', background: 'var(--ember)', color: 'var(--ink)', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Quantities</button>
               <button id="btn-to-tab-cabinets" className="btn btn-sm" style={{ flex: 1, fontSize: '11px', padding: '4px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cabinet Order List</button>
             </div>
             
@@ -216,7 +216,7 @@ export default function App() {
           </div>
         </section>
         <section className="sidebar-section">
-          <button id="btn-export-boss" className="btn btn-block btn-accent" style={{ background: '#2563eb', color: '#fff', marginBottom: '6px' }}>📋 Send to Laptop (Boss Report)</button>
+          <button id="btn-export-boss" className="btn btn-block btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)', marginBottom: '6px' }}>📋 Send to Laptop (Boss Report)</button>
           <div className="btn-row" style={{ marginTop: '6px' }}>
             <button id="btn-send-job" className="btn btn-sm btn-block" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Send this one job — walls, photos, notes, everything — to someone else, by text/email/AirDrop/whatever's easiest">📤 Send This Job</button>
             <button id="btn-open-job" className="btn btn-sm btn-block" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--border)' }} title="Got a job file someone sent you? Open it here">📥 Open a Job</button>
@@ -241,7 +241,7 @@ export default function App() {
         <div id="toolbar">
           <div className="toolbar-left">
             <button id="btn-toggle-sidebar" className="btn btn-sm toolbar-btn" title="Toggle Sidebar" style={{ fontSize: '26px', lineHeight: '1', fontWeight: 700 }}>&#8249;</button>
-            <button id="btn-toolbar-wizard" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '2px 8px', fontSize: '11px' }}>🪄 Project Wizard</button>
+            <button id="btn-toolbar-wizard" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)', border: 'none', padding: '2px 8px', fontSize: '11px' }}>🪄 Project Wizard</button>
             <span id="toolbar-info">New project</span>
           </div>
           <div className="toolbar-right">
@@ -332,7 +332,7 @@ export default function App() {
         </label>
         <div style={{ marginTop: '8px', marginBottom: '8px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: '#cbd5e1' }}>
-            <input type="checkbox" id="wall-edit-lock" style={{ accentColor: '#2563eb', width: '14px', height: '14px', cursor: 'pointer' }} />
+            <input type="checkbox" id="wall-edit-lock" style={{ accentColor: 'var(--ember)', width: '14px', height: '14px', cursor: 'pointer' }} />
             <span>Lock Wall (Prevent movement & deletion)</span>
           </label>
         </div>
@@ -425,7 +425,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '480px', width: '92%' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span id="asset-modal-title">Edit Asset Properties</span>
-            <button id="asset-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+            <button id="asset-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--ink)' }}>&times;</button>
           </div>
           <p className="modal-sub">Adjust dimensions, height, rotation, or shower enclosure parameters.</p>
           <div className="modal-body" style={{ padding: '12px 0' }}>
@@ -445,7 +445,7 @@ export default function App() {
             </div>
 
             <div id="asset-shower-fields" className="hidden" style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '6px', marginTop: '10px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--maize)', marginBottom: '8px' }}>Custom Shower & Enclosure Options</div>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--ember)', marginBottom: '8px' }}>Custom Shower & Enclosure Options</div>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
                 <label className="calc-label">Knee Wall Width (in)
@@ -458,7 +458,7 @@ export default function App() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
                 <label className="calc-label">Enclosure / Wall Style
-                  <select id="asset-edit-wallstyle" style={{ background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px', borderRadius: '4px', width: '100%', fontSize: '11px' }}>
+                  <select id="asset-edit-wallstyle" style={{ background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px', borderRadius: '4px', width: '100%', fontSize: '11px' }}>
                     <option value="kneewall_glass">Knee Wall w/ Glass Top</option>
                     <option value="full_wall">Full-Height Solid Wall</option>
                     <option value="frameless_glass">Frameless Glass Enclosure</option>
@@ -467,7 +467,7 @@ export default function App() {
                 </label>
 
                 <label className="calc-label">Drain Location & Type
-                  <select id="asset-edit-draintype" style={{ background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px', borderRadius: '4px', width: '100%', fontSize: '11px' }}>
+                  <select id="asset-edit-draintype" style={{ background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px', borderRadius: '4px', width: '100%', fontSize: '11px' }}>
                     <option value="center">Center Point Drain</option>
                     <option value="trench_left">Linear Drain (Left End)</option>
                     <option value="trench_right">Linear Drain (Right End)</option>
@@ -583,7 +583,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '650px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>✏️ Edit & Adjust Takeoff Quantities</span>
-            <button id="takeoff-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+            <button id="takeoff-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--ink)' }}>&times;</button>
           </div>
           <p className="modal-sub">Adjust calculated numbers or add extra items (e.g. doors in other un-drawn rooms, extra materials) for this project report.</p>
           <div className="modal-body" style={{ padding: '12px 0', color: '#1f2937' }}>
@@ -609,7 +609,7 @@ export default function App() {
             <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '12px', marginTop: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937' }}>Custom Material Line Items</span>
-                <button id="btn-add-custom-item" className="btn btn-sm" style={{ fontSize: '11px', padding: '2px 8px', background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Add Item</button>
+                <button id="btn-add-custom-item" className="btn btn-sm" style={{ fontSize: '11px', padding: '2px 8px', background: 'var(--ember)', color: 'var(--ink)', border: 'none', cursor: 'pointer' }}>+ Add Item</button>
               </div>
               <div id="custom-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                 {/* Dynamically populated */}
@@ -617,7 +617,7 @@ export default function App() {
             </div>
           </div>
           <div className="modal-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '12px' }}>
-            <button id="takeoff-modal-save" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff' }}>Save Adjustments</button>
+            <button id="takeoff-modal-save" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)' }}>Save Adjustments</button>
             <button id="takeoff-modal-cancel" className="btn btn-sm">Cancel</button>
           </div>
         </div>
@@ -628,14 +628,14 @@ export default function App() {
         <div className="modal modal-boss-report" style={{ maxWidth: '820px', width: '92%', maxHeight: '92vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>📋 Boss Field Summary Report</span>
-            <button id="boss-report-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+            <button id="boss-report-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--ink)' }}>&times;</button>
           </div>
           <p className="modal-sub">Complete field survey report including floor plan drawing, photo attachments, notes, and takeoff calculations.</p>
           <div className="modal-body" id="boss-report-content" style={{ padding: '16px 0', color: '#1f2937' }}>
             {/* Populated dynamically */}
           </div>
           <div className="modal-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
-            <button id="boss-report-print" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff' }}>🖨️ Print / Save PDF</button>
+            <button id="boss-report-print" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)' }}>🖨️ Print / Save PDF</button>
             <button id="boss-report-close" className="btn btn-sm">Close</button>
           </div>
         </div>
@@ -645,12 +645,12 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '420px', width: '90%', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 'none' }}>
             <span>New / Open Project</span>
-            <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+            <button id="skip-category-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--ink)' }}>&times;</button>
           </div>
           <p className="modal-sub" style={{ flex: 'none' }}>Jump straight to a job's canvas, or start a blank one</p>
           <div id="skip-category-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 'none' }}>
-            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Bath</button>
-            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', borderRadius: '8px', color: 'var(--blue)' }}>+ Kitchen</button>
+            <button className="skip-cat-card" data-skip-cat="Bathroom" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(232,98,44,0.08)', border: '1px solid var(--ink)', borderRadius: '8px', color: 'var(--ink)' }}>+ Bath</button>
+            <button className="skip-cat-card" data-skip-cat="Kitchen" style={{ padding: '18px 8px', fontSize: '17px', fontWeight: 800, cursor: 'pointer', background: 'rgba(232,98,44,0.08)', border: '1px solid var(--ink)', borderRadius: '8px', color: 'var(--ink)' }}>+ Kitchen</button>
           </div>
           <button id="skip-btn-full-setup" className="btn btn-sm btn-block" style={{ marginTop: '8px', flex: 'none', background: 'none', border: '1px dashed var(--border)', color: '#64748b', fontSize: '12px', fontWeight: 600 }}>🪄 Need client info first? Full Setup Wizard →</button>
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px', borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '12px', paddingTop: '10px', flex: 'none' }}>Or jump to an existing job</div>
@@ -664,7 +664,7 @@ export default function App() {
         <div className="modal" style={{ maxWidth: '680px', width: '92%', maxHeight: '90vh', overflowY: 'auto' }}>
           <div className="modal-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>🪄 New Project Setup Wizard</span>
-            <button id="wizard-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--blue)' }}>&times;</button>
+            <button id="wizard-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--ink)' }}>&times;</button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
@@ -672,7 +672,7 @@ export default function App() {
             <button id="wiz-btn-switch-job" className="btn btn-sm" style={{ fontSize: '11px', padding: '3px 8px' }}>🔍 Switch Job</button>
           </div>
           <div id="wiz-job-search-panel" className="hidden" style={{ marginBottom: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px' }}>
-            <button id="wiz-btn-new-job" className="btn btn-sm btn-block" style={{ marginBottom: '8px', background: 'rgba(37,99,235,0.08)', border: '1px solid var(--blue)', color: 'var(--blue)', fontWeight: 700 }}>+ Start a New Job</button>
+            <button id="wiz-btn-new-job" className="btn btn-sm btn-block" style={{ marginBottom: '8px', background: 'rgba(232,98,44,0.08)', border: '1px solid var(--ink)', color: 'var(--ink)', fontWeight: 700 }}>+ Start a New Job</button>
             <input type="text" id="wiz-job-search" placeholder="Or search an existing job..." style={{ width: '100%', padding: '7px 9px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }} />
             <div id="wiz-job-search-list" style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}></div>
           </div>
@@ -687,36 +687,36 @@ export default function App() {
 
           {/* STEP 1: Client Info */}
           <div className="wizard-step-content" id="wizard-step-1">
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--maize)' }}>Who is this project for?</h3>
+            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--ember)' }}>Who is this project for?</h3>
             <p style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '14px' }}>Enter the customer or job site details to keep your floor plans, field notes, and takeoff reports organized.</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Customer / Client Name *</label>
-                <input type="text" id="wiz-customer-name" placeholder="e.g. John &amp; Sarah Smith" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: '#001a33', color: '#fff', fontSize: '13px' }} />
+                <input type="text" id="wiz-customer-name" placeholder="e.g. John &amp; Sarah Smith" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'var(--ink)', color: '#fff', fontSize: '13px' }} />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Phone Number</label>
-                <input type="tel" id="wiz-customer-phone" placeholder="e.g. (555) 123-4567" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: '#001a33', color: '#fff', fontSize: '13px' }} />
+                <input type="tel" id="wiz-customer-phone" placeholder="e.g. (555) 123-4567" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'var(--ink)', color: '#fff', fontSize: '13px' }} />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Email Address</label>
-                <input type="email" id="wiz-customer-email" placeholder="e.g. customer@example.com" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: '#001a33', color: '#fff', fontSize: '13px' }} />
+                <input type="email" id="wiz-customer-email" placeholder="e.g. customer@example.com" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'var(--ink)', color: '#fff', fontSize: '13px' }} />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Job Site Address</label>
-                <input type="text" id="wiz-customer-address" placeholder="e.g. 123 Main St, City, State" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: '#001a33', color: '#fff', fontSize: '13px' }} />
+                <input type="text" id="wiz-customer-address" placeholder="e.g. 123 Main St, City, State" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'var(--ink)', color: '#fff', fontSize: '13px' }} />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Project Room / Area Title</label>
-                <input type="text" id="wiz-project-title" placeholder="e.g. Master Bath Remodel, Main Kitchen Upgrade" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: '#001a33', color: '#fff', fontSize: '13px' }} />
+                <input type="text" id="wiz-project-title" placeholder="e.g. Master Bath Remodel, Main Kitchen Upgrade" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'var(--ink)', color: '#fff', fontSize: '13px' }} />
               </div>
             </div>
           </div>
 
           {/* STEP 2: Project Category Focus */}
           <div className="wizard-step-content hidden" id="wizard-step-2">
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--maize)' }}>Select Project Type &amp; Category</h3>
+            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--ember)' }}>Select Project Type &amp; Category</h3>
             <p style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '14px' }}>Picking your main project focus will auto-tailor your canvas, catalogs, and tools so you only see what you need!</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }} id="wiz-cat-cards">
@@ -755,13 +755,13 @@ export default function App() {
 
           {/* STEP 3: Scope & Field Measurements */}
           <div className="wizard-step-content hidden" id="wizard-step-3">
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--maize)' }}>Define Scope &amp; Field Specs</h3>
+            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '8px', color: 'var(--ember)' }}>Define Scope &amp; Field Specs</h3>
             <p style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '14px' }}>Configure wall defaults and scope to ensure accurate takeoff calculations.</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Work Scope</label>
-                <select id="wiz-scope" defaultValue="Full Build" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                <select id="wiz-scope" defaultValue="Full Build" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
                   <option value="Full Build">Full Build &amp; Finish</option>
                   <option value="Floor Only">Floor Only</option>
                   <option value="Trim Work Only">Trim Work Only</option>
@@ -771,7 +771,7 @@ export default function App() {
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Default Ceiling Height</label>
-                <select id="wiz-ceiling-height" defaultValue="96" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                <select id="wiz-ceiling-height" defaultValue="96" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
                   <option value="96">8 ft (96") - Standard</option>
                   <option value="108">9 ft (108")</option>
                   <option value="120">10 ft (120")</option>
@@ -780,14 +780,14 @@ export default function App() {
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Wall Stud Spacing</label>
-                <select id="wiz-stud-spacing" defaultValue="16" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                <select id="wiz-stud-spacing" defaultValue="16" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
                   <option value="16">16" O.C. (Standard Interior)</option>
                   <option value="24">24" O.C. (Advanced / Exterior)</option>
                 </select>
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Initial Wall Type</label>
-                <select id="wiz-wall-type" defaultValue="existing_to_remain" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: '#001a33', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                <select id="wiz-wall-type" defaultValue="existing_to_remain" style={{ width: '100%', padding: '8px', borderRadius: '4px', background: 'var(--ink)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '12px' }}>
                   <option value="existing_to_remain">Existing Wall (Black)</option>
                   <option value="new_construction">New Wall Construction (Blue)</option>
                   <option value="demolished">Wall to Demolish (Red Dash)</option>
@@ -800,7 +800,7 @@ export default function App() {
           <div className="wizard-step-content hidden" id="wizard-step-4">
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
               <div style={{ fontSize: '36px', marginBottom: '8px' }}>🚀</div>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--maize)', marginBottom: '6px' }}>Your Project Canvas is Ready!</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--ember)', marginBottom: '6px' }}>Your Project Canvas is Ready!</h3>
               <p style={{ fontSize: '12px', color: '#e2e8f0', maxWidth: '460px', margin: '0 auto 16px auto' }}>
                 We've configured your workspace for <b id="wiz-summary-cat" style={{ color: '#fff' }}>Kitchen</b> with tailored tool palettes and room specs loaded.
               </p>
@@ -819,7 +819,7 @@ export default function App() {
             <button id="wiz-btn-back" className="btn btn-sm" style={{ opacity: 0.7 }}>&larr; Back</button>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button id="wiz-btn-cancel" className="btn btn-sm">Cancel</button>
-              <button id="wiz-btn-next" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff' }}>Next Step &rarr;</button>
+              <button id="wiz-btn-next" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)' }}>Next Step &rarr;</button>
               <button id="wiz-btn-finish" className="btn btn-sm btn-accent hidden" style={{ background: '#16a34a', color: '#fff' }}>🚀 Launch Project Canvas</button>
             </div>
           </div>
@@ -852,15 +852,15 @@ export default function App() {
 
       {/* NOTES HALF-SCREEN POPUP MODAL */}
       <div id="notes-modal-overlay" className="modal-overlay hidden">
-        <div className="modal" style={{ width: '85vw', maxWidth: '750px', height: '65vh', maxHeight: '85vh', display: 'flex', flexDirection: 'column', background: '#001a33', border: '1px solid var(--maize)' }}>
+        <div className="modal" style={{ width: '85vw', maxWidth: '750px', height: '65vh', maxHeight: '85vh', display: 'flex', flexDirection: 'column', background: 'var(--ink)', border: '1px solid var(--ember)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3 className="modal-title" style={{ margin: 0, color: 'var(--maize)' }}>📝 Project Field Notes & Observations</h3>
+            <h3 className="modal-title" style={{ margin: 0, color: 'var(--ember)' }}>📝 Project Field Notes & Observations</h3>
             <button id="notes-modal-close-x" className="btn btn-sm" style={{ background: 'none', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer' }}>&times;</button>
           </div>
           <p className="modal-sub" style={{ margin: '0 0 10px 0', color: '#cbd5e1' }}>Type or view comprehensive site notes, measurements, and client requests in full detail.</p>
           <textarea id="notes-modal-textarea" style={{ flex: 1, width: '100%', padding: '12px', borderRadius: '8px', background: '#001226', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '14px', resize: 'none', fontFamily: 'inherit' }} placeholder="Enter field notes..."></textarea>
           <div className="modal-actions" style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button id="notes-modal-save" className="btn btn-sm btn-accent" style={{ background: '#2563eb', color: '#fff' }}>Done / Save</button>
+            <button id="notes-modal-save" className="btn btn-sm btn-accent" style={{ background: 'var(--ember)', color: 'var(--ink)' }}>Done / Save</button>
           </div>
         </div>
       </div>
