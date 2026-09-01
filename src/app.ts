@@ -4887,7 +4887,7 @@ export function initNextLevel() {
   (window as any).NextLevel = {
     newJob(): string {
       const stamp = new Date().toLocaleDateString([], { month: 'numeric', day: 'numeric' });
-      const p = newProject(`New Job — ${stamp}`);
+      const p = newProject(stamp);
       projects.push(p);
       currentProjectId = p.id;
       currentPageIdx = 0;
