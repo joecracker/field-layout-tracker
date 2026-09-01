@@ -145,6 +145,8 @@ export function initNextLevel() {
   let isDraggingSelection = false;
   let selectionDragStart: Point | null = null;
   let dragHandle = -1; // -1 none, 0=start, 1=end
+  let resizingAssetCorner = -1;     // -1 none, else 0-3 (which corner is grabbed)
+  let resizeAnchorWorld: Point | null = null; // opposite corner, held fixed
   let draggingNoteIdx = -1;
 
   // Copy/paste
@@ -1548,6 +1550,11 @@ export function initNextLevel() {
     ctx.restore();
   }
 
+  function rotatePt(p: Point, ang: number): Point {
+    const c = Math.cos(ang), s = Math.sin(ang);
+    return { x: p.x * c - p.y * s, y: p.x * s + p.y * c };
+  }
+
   // Rotation-aware asset geometry. Cabinets pivot around their center when
   // drawn, so hit-testing and collision must use the ROTATED footprint —
   // otherwise a turned cabinet's clickable/collision box stays unrotated.
@@ -1943,23 +1950,35 @@ export function initNextLevel() {
 
     // Draw Selection Box if selected
     if (isSelected) {
-      ctx.strokeStyle = '#2563eb';
+      ctx.strokeStyle = '#E8622C';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.strokeRect(-hw - 4, -hd - 4, w + 8, d + 8);
       ctx.setLineDash([]);
 
-      // Draw rotation handle
+      // Corner resize handles — grab to stretch to size (like a wall).
+      const hs = 11 / zoom; // constant screen size
+      ctx.fillStyle = '#E8622C';
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5 / zoom;
+      [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]].forEach(([cx, cy]) => {
+        ctx.beginPath();
+        ctx.rect(cx - hs / 2, cy - hs / 2, hs, hs);
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      // Rotation handle
       ctx.beginPath();
       ctx.moveTo(0, -hd - 4);
       ctx.lineTo(0, -hd - 16);
-      ctx.strokeStyle = '#2563eb';
+      ctx.strokeStyle = '#E8622C';
       ctx.lineWidth = 2;
       ctx.stroke();
 
       ctx.beginPath();
       ctx.arc(0, -hd - 16, 4, 0, Math.PI * 2);
-      ctx.fillStyle = '#2563eb';
+      ctx.fillStyle = '#E8622C';
       ctx.fill();
     }
 
@@ -4133,6 +4152,24 @@ export function initNextLevel() {
       canvas.style.cursor = 'grabbing';
       return;
     }
+
+    // Grab a resize handle on the selected asset (stretch to size, like a wall).
+    if(page){
+      const selId = selectedAssetId || (selectedAssetIds.length === 1 ? selectedAssetIds[0] : null);
+      const selAsset = selId ? page.assets.find(a => a.id === selId) : null;
+      if(selAsset){
+        const corners = rotatedAssetCorners(selAsset);
+        const grabR = 14 / zoom; // ~14 screen px regardless of zoom
+        for(let i = 0; i < 4; i++){
+          if(dist(pos, corners[i]) <= grabR){
+            resizingAssetCorner = i;
+            resizeAnchorWorld = corners[(i + 2) % 4]; // opposite corner stays put
+            pushHistory();
+            return;
+          }
+        }
+      }
+    }
     if(isPanning) return;
 
     hideQuickActionsMenu();
@@ -4352,6 +4389,28 @@ export function initNextLevel() {
   }
 
   function onCanvasMove(e: MouseEvent){
+    if(resizingAssetCorner >= 0 && resizeAnchorWorld){
+      const pos = screenToCanvas(e.clientX, e.clientY);
+      const page = getPage();
+      const selId = selectedAssetId || (selectedAssetIds.length === 1 ? selectedAssetIds[0] : null);
+      const a = page && selId ? page.assets.find(x => x.id === selId) : null;
+      if(a){
+        const rot = ((a.rotation || 0) * Math.PI) / 180;
+        // Work in the asset's own axes: rotate both points back by -rotation.
+        const uDrag = rotatePt(pos, -rot);
+        const uAnchor = rotatePt(resizeAnchorWorld, -rot);
+        const w = Math.max(SNAP, Math.abs(uDrag.x - uAnchor.x));
+        const d = Math.max(SNAP, Math.abs(uDrag.y - uAnchor.y));
+        const uCenter = { x: (uDrag.x + uAnchor.x) / 2, y: (uDrag.y + uAnchor.y) / 2 };
+        const center = rotatePt(uCenter, rot); // back to world
+        a.width = Math.round(w);
+        a.depth = Math.round(d);
+        a.x = center.x;
+        a.y = center.y;
+        render();
+      }
+      return;
+    }
     if(draggingNoteIdx >= 0){
       const pos = screenToCanvas(e.clientX, e.clientY);
       const page = getPage();
@@ -4491,6 +4550,14 @@ export function initNextLevel() {
   }
 
   function onCanvasUp(e: MouseEvent){
+    if(resizingAssetCorner >= 0){
+      resizingAssetCorner = -1;
+      resizeAnchorWorld = null;
+      pushHistory();
+      save();
+      render();
+      return;
+    }
     draggingNoteIdx = -1;
     if(longPressTimer){
       clearTimeout(longPressTimer);
