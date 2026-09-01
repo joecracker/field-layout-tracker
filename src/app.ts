@@ -4343,10 +4343,22 @@ export function initNextLevel() {
     }
 
     if(isDraggingSelection && selectionDragStart){
-      const dx = pos.x - selectionDragStart.x;
-      const dy = pos.y - selectionDragStart.y;
-      selectionDragStart = pos;
+      let dx = pos.x - selectionDragStart.x;
+      let dy = pos.y - selectionDragStart.y;
       const page = getPage();
+      if(page){
+        // Ortho-lock: dragging a single near-horizontal wall moves it vertically
+        // only (and vice-versa), so the room stays square instead of skewing.
+        if(selectedWallIndices.length === 1){
+          const w = page.walls[selectedWallIndices[0]];
+          if(w){
+            const adx = Math.abs(w.end.x - w.start.x), ady = Math.abs(w.end.y - w.start.y);
+            if(ady < adx * 0.0875) dx = 0;      // near-horizontal → move vertically only
+            else if(adx < ady * 0.0875) dy = 0; // near-vertical → move horizontally only
+          }
+        }
+      }
+      selectionDragStart = pos;
       if(page){
         // Capture the corners of the moving walls BEFORE they move, so we can
         // drag any connected (coincident) neighbor endpoints along with them.
