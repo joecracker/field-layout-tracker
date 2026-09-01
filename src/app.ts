@@ -36,6 +36,7 @@ export function initNextLevel() {
     angle?: number;
     width: number;
     height?: number;
+    locked?: boolean;
   }
   interface Asset {
     id: string;
@@ -148,6 +149,7 @@ export function initNextLevel() {
   let resizingAssetCorner = -1;     // -1 none, else 0-3 (which corner is grabbed)
   let resizeAnchorWorld: Point | null = null; // opposite corner, held fixed
   let draggingOpening: { type: 'door' | 'window'; id: string } | null = null;
+  let openingMoved = false;
   let draggingNoteIdx = -1;
 
   // Copy/paste
@@ -3423,8 +3425,6 @@ export function initNextLevel() {
       toast('Asset deleted');
     });
 
-    document.getElementById('btn-undo')?.addEventListener('click', ()=>{ undo(); });
-    document.getElementById('btn-redo')?.addEventListener('click', ()=>{ redo(); });
     document.getElementById('btn-help')?.addEventListener('click', ()=>{
       document.getElementById('help-modal')?.classList.remove('hidden');
     });
@@ -4265,13 +4265,29 @@ export function initNextLevel() {
       return;
     } else if(tool==='select'){
       const page=getPage();
+      // ── Openings FIRST (they sit on walls; the wall must not steal the tap) ──
+      if(page){
+        const hitDoor = page.doors.find(d => dist(pos, {x: d.x||0, y: d.y||0}) < 22);
+        const hitWin = !hitDoor ? page.windows.find(w => dist(pos, {x: w.x||0, y: w.y||0}) < 22) : null;
+        const hit = hitDoor || hitWin;
+        if(hit){
+          const type: 'door'|'window' = hitDoor ? 'door' : 'window';
+          selectedWallIdx = -1; selectedWallIndices = [];
+          selectedAssetId = null; selectedAssetIds = [];
+          document.getElementById('wall-edit-panel')?.classList.add('hidden');
+          selectedOpening = { type, id: hit.id };
+          if(!hit.locked) draggingOpening = { type, id: hit.id }; // arm free slide
+          showOpeningEdit(hit, type);
+          render();
+          return;
+        }
+      }
       if (page && page.assets) {
         const clickedAsset = page.assets.slice().reverse().find(a => pointInAsset(pos, a));
         if (clickedAsset) {
           if (selectedAssetIds.includes(clickedAsset.id) || selectedAssetIds.length > 0 || selectedWallIndices.length > 0) {
             isDraggingSelection = true;
             selectionDragStart = pos;
-            pushHistory();
             return;
           }
           selectedAssetId = clickedAsset.id;
@@ -4289,16 +4305,8 @@ export function initNextLevel() {
       if(selectedWallIdx >= 0 && page){
         const sw = page.walls[selectedWallIdx];
         if(sw && !sw.locked){
-          if(dist(pos, sw.start) < SNAP*1.5){
-            dragHandle = 0;
-            pushHistory();
-            return;
-          }
-          if(dist(pos, sw.end) < SNAP*1.5){
-            dragHandle = 1;
-            pushHistory();
-            return;
-          }
+          if(dist(pos, sw.start) < SNAP*1.5){ dragHandle = 0; return; }
+          if(dist(pos, sw.end) < SNAP*1.5){ dragHandle = 1; return; }
         }
       }
       const wi = findWallAt(pos, SNAP*1.5);
@@ -4306,47 +4314,17 @@ export function initNextLevel() {
         if (selectedWallIndices.includes(wi)) {
           isDraggingSelection = true;
           selectionDragStart = pos;
-          pushHistory();
           return;
         }
         selectedWallIdx = wi;
         selectedWallIndices = [wi];
         selectedAssetId = null;
         selectedAssetIds = [];
+        selectedOpening = null;
+        hideOpeningEdit();
         showWallEdit(wi);
         render();
       } else {
-        const page=getPage();
-        if(page){
-          const clickedDoor = page.doors.find(d => dist(pos, {x: d.x||0, y: d.y||0}) < 20);
-          if(clickedDoor){
-            selectedWallIdx = -1;
-            selectedWallIndices = [];
-            selectedAssetId = null;
-            selectedAssetIds = [];
-            document.getElementById('wall-edit-panel')?.classList.add('hidden');
-            selectedOpening = {type:'door', id: clickedDoor.id};
-            draggingOpening = {type:'door', id: clickedDoor.id};
-            pushHistory();
-            showOpeningEdit(clickedDoor, 'door');
-            render();
-            return;
-          }
-          const clickedWin = page.windows.find(w => dist(pos, {x: w.x||0, y: w.y||0}) < 20);
-          if(clickedWin){
-            selectedWallIdx = -1;
-            selectedWallIndices = [];
-            selectedAssetId = null;
-            selectedAssetIds = [];
-            document.getElementById('wall-edit-panel')?.classList.add('hidden');
-            selectedOpening = {type:'window', id: clickedWin.id};
-            draggingOpening = {type:'window', id: clickedWin.id};
-            pushHistory();
-            showOpeningEdit(clickedWin, 'window');
-            render();
-            return;
-          }
-        }
         selectedWallIdx = -1;
         selectedWallIndices = [];
         selectedAssetId = null;
@@ -4442,6 +4420,7 @@ export function initNextLevel() {
             const len = wallLength(w);
             op.wallIdx = wi;
             op.distFromStart = clamp(dist(w.start, cp) - op.width/2, 0, Math.max(0, len - op.width));
+            openingMoved = true;
             recalcOpenings();
             const distInput = document.getElementById('opening-edit-dist') as HTMLInputElement;
             if(distInput) distInput.value = op.distFromStart.toFixed(2);
@@ -4615,8 +4594,8 @@ export function initNextLevel() {
   function onCanvasUp(e: MouseEvent){
     if(draggingOpening){
       draggingOpening = null;
-      pushHistory();
-      save();
+      if(openingMoved){ pushHistory(); save(); }
+      openingMoved = false;
       render();
       return;
     }
