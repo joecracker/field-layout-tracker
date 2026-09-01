@@ -633,6 +633,9 @@ export default function App() {
           <input type="number" id="opening-edit-dist" min="0" step="0.25" />
         </label>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }} id="opening-edit-dist-ft"></div>
+        <div id="opening-flip-wrap" className="btn-row" style={{ marginBottom: '8px' }}>
+          <button id="opening-edit-flip" className="btn btn-sm btn-block">&#8646; Flip Swing In/Out</button>
+        </div>
         <div className="btn-row" style={{ marginTop: '8px' }}>
           <button id="opening-edit-update" className="btn btn-sm btn-accent">Update</button>
           <button id="opening-edit-delete" className="btn btn-sm btn-danger">Delete</button>

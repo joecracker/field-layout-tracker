@@ -38,6 +38,7 @@ export function initNextLevel() {
     height?: number;
     locked?: boolean;
     floating?: boolean;
+    flipped?: boolean;
   }
   interface Asset {
     id: string;
@@ -991,6 +992,8 @@ export function initNextLevel() {
     (document.getElementById('opening-edit-width') as HTMLInputElement).value = Math.round(opening.width).toString();
     (document.getElementById('opening-edit-height') as HTMLInputElement).value = Math.round(opening.height || 36).toString();
     hWrap.style.display = type === 'door' ? 'none' : 'block';
+    const flipWrap = document.getElementById('opening-flip-wrap');
+    if(flipWrap) flipWrap.style.display = type === 'door' ? 'flex' : 'none';
 
     const distVal = Math.max(0, opening.distFromStart - opening.width / 2);
 
@@ -1482,9 +1485,10 @@ export function initNextLevel() {
 
     if(d.type==='left_swing' || d.type==='right_swing'){
       const dir = d.type==='left_swing' ? 1 : -1;
+      const flip = d.flipped ? -1 : 1;
       const swingRadius = hw * 2;
       ctx.beginPath();
-      ctx.arc(-hw * dir, 0, swingRadius, 0, -Math.PI/2 * dir, dir > 0);
+      ctx.arc(-hw * dir, 0, swingRadius, 0, -Math.PI/2 * dir * flip, dir * flip > 0);
       ctx.strokeStyle = '#00274C';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4,3]);
@@ -1493,7 +1497,7 @@ export function initNextLevel() {
 
       ctx.beginPath();
       ctx.moveTo(-hw, 0);
-      ctx.lineTo(-hw, -swingRadius * 0.7);
+      ctx.lineTo(-hw, -swingRadius * 0.7 * flip);
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -3845,6 +3849,12 @@ export function initNextLevel() {
       if(!selectedOpening) return;
       deleteOpening(selectedOpening.type, selectedOpening.id);
       hideOpeningEdit();
+    });
+    document.getElementById('opening-edit-flip')?.addEventListener('click', function(){
+      const opening = getSelectedOpening();
+      if(!opening) return;
+      opening.flipped = !opening.flipped;
+      pushHistory(); saveAndRender();
     });
     document.getElementById('opening-edit-ref')?.addEventListener('change', function(){
       const opening = getSelectedOpening();
