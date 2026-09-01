@@ -595,8 +595,8 @@ export default function App() {
       {/* WALL EDIT PANEL */}
       <div id="wall-edit-panel" className="wall-edit-panel hidden">
         <div className="wall-edit-title">Wall Properties</div>
-        <label className="calc-label">Length (inches)
-          <input type="number" id="wall-edit-length" min="1" />
+        <label className="calc-label">Length (feet)
+          <input type="number" id="wall-edit-length" min="0.1" step="0.25" />
         </label>
         <label className="calc-label">Wall Type
           <select id="wall-edit-type" defaultValue="existing_to_remain">

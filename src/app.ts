@@ -1100,8 +1100,8 @@ export function initNextLevel() {
     const rightX = w.start.x + dx * (opening.distFromStart + opening.width);
     const rightY = w.start.y + dy * (opening.distFromStart + opening.width);
 
-    const distToLeft = (opening.distFromStart / 12).toFixed(1) + '"';
-    const distToRight = ((wallLen - opening.distFromStart - opening.width) / 12).toFixed(1) + '"';
+    const distToLeft = fmtLen(opening.distFromStart);
+    const distToRight = fmtLen(wallLen - opening.distFromStart - opening.width);
 
     drawDimLine(w.start.x, w.start.y, leftX, leftY, distToLeft, 'left');
     drawDimLine(rightX, rightY, w.end.x, w.end.y, distToRight, 'right');
@@ -1113,6 +1113,11 @@ export function initNextLevel() {
     const q = Math.round(rem * 4) / 4;
     if(ft > 0) return ft + "'" + (q > 0 ? ' ' + q.toFixed(q % 1 === 0 ? 0 : 2) + '"' : '"');
     return q.toFixed(q % 1 === 0 ? 0 : 2) + '"';
+  }
+
+  // All lengths display as feet-inches (US floor-plan standard, e.g. 16' 6").
+  function fmtLen(inches: number){
+    return formatInches(inches);
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -1217,7 +1222,7 @@ export function initNextLevel() {
         ctx.save();
         ctx.translate(selOp.x || 0, selOp.y || 0);
         ctx.rotate(selOp.angle || 0);
-        ctx.strokeStyle = '#FFCB05';
+        ctx.strokeStyle = '#E8622C';
         ctx.lineWidth = 3;
         const hw2 = (selOp.width || 32) / 2;
         ctx.strokeRect(-hw2 - 4, -8, hw2 * 2 + 8, 16);
@@ -1370,14 +1375,13 @@ export function initNextLevel() {
       ctx.lineWidth = 3;
     }
     if(selected){
-      ctx.strokeStyle = '#FFCB05';
+      ctx.strokeStyle = '#E8622C';
       ctx.lineWidth = 4;
     }
     ctx.stroke();
     ctx.setLineDash([]);
 
     const len = wallLength(w);
-    const lenFt = (len / 12).toFixed(1);
     const mx = (w.start.x + w.end.x)/2;
     const my = (w.start.y + w.end.y)/2;
     const angle = wallAngle(w);
@@ -1388,7 +1392,7 @@ export function initNextLevel() {
       ctx.fillStyle = selected ? '#00274C' : '#444';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(lenFt + ' ft', mx + offsetX, my + offsetY);
+      ctx.fillText(fmtLen(len), mx + offsetX, my + offsetY);
     }
     if (w.locked) {
       ctx.font = '12px sans-serif';
@@ -1421,7 +1425,6 @@ export function initNextLevel() {
     ctx.setLineDash([]);
 
     const len = dist(wallStart, {x:sx,y:sy});
-    const lenFt = (len / 12).toFixed(1);
     const mx = (wallStart.x + sx)/2;
     const my = (wallStart.y + sy)/2;
     const angle = Math.atan2(sy-wallStart.y, sx-wallStart.x);
@@ -1430,7 +1433,7 @@ export function initNextLevel() {
     ctx.fillStyle = '#00274C';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(lenFt + ' ft (' + Math.round(len) + '")', mx+ox, my+oy);
+    ctx.fillText(fmtLen(len), mx+ox, my+oy);
 
     // Draw snap indicator dot on snapped endpoint
     ctx.beginPath();
@@ -1448,7 +1451,7 @@ export function initNextLevel() {
     const r = 6;
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, r/zoom+1, 0, Math.PI*2);
-    ctx.fillStyle = selectedWallIdx>=0 ? '#FFCB05' : '#00274C';
+    ctx.fillStyle = selectedWallIdx>=0 ? '#E8622C' : '#15120F';
     ctx.fill();
     ctx.strokeStyle = '#00274C';
     ctx.lineWidth = 2/zoom;
@@ -1694,7 +1697,7 @@ export function initNextLevel() {
         // Front countertop lip line
         ctx.beginPath();
         ctx.moveTo(-hw, hd); ctx.lineTo(hw, hd);
-        ctx.strokeStyle = showRed ? '#ef4444' : '#FFCB05';
+        ctx.strokeStyle = showRed ? '#ef4444' : '#E8622C';
         ctx.lineWidth = 3;
         ctx.stroke();
 
@@ -3740,10 +3743,18 @@ export function initNextLevel() {
         toast('Cannot update locked wall');
         return;
       }
-      const newLen = parseFloat((document.getElementById('wall-edit-length') as HTMLInputElement).value);
-      if(newLen && newLen>0){
+      const newLenFt = parseFloat((document.getElementById('wall-edit-length') as HTMLInputElement).value);
+      if(newLenFt && newLenFt>0){
+        const newLen = newLenFt * 12; // feet → inches (world units)
         const angle = wallAngle(w);
+        const oldEnd = { x: w.end.x, y: w.end.y };
         w.end = { x: w.start.x + Math.cos(angle)*newLen, y: w.start.y + Math.sin(angle)*newLen };
+        // Drag any wall sharing the old corner along to the new one.
+        page.walls.forEach((ow, i) => {
+          if(i === selectedWallIdx || ow.locked) return;
+          if(samePt(ow.start, oldEnd)) ow.start = { x: w.end.x, y: w.end.y };
+          if(samePt(ow.end, oldEnd)) ow.end = { x: w.end.x, y: w.end.y };
+        });
       }
       const typeSelect = document.getElementById('wall-edit-type') as HTMLSelectElement;
       if(typeSelect){
@@ -4596,7 +4607,7 @@ export function initNextLevel() {
       });
       recalcOpenings();
       const lenInput = document.getElementById('wall-edit-length') as HTMLInputElement;
-      if (lenInput) lenInput.value = Math.round(wallLength(w)).toString();
+      if (lenInput) lenInput.value = (wallLength(w)/12).toFixed(2);
       render();
     }
   }
@@ -4852,7 +4863,7 @@ export function initNextLevel() {
     const page=getPage(); if(!page) return;
     const w = page.walls[wi];
     const lenInput = document.getElementById('wall-edit-length') as HTMLInputElement;
-    if (lenInput) lenInput.value = Math.round(wallLength(w)).toString();
+    if (lenInput) lenInput.value = (wallLength(w)/12).toFixed(2);
     const typeSelect = document.getElementById('wall-edit-type') as HTMLSelectElement;
     if (typeSelect) typeSelect.value = w.wallType || 'existing_to_remain';
     const lockInput = document.getElementById('wall-edit-lock') as HTMLInputElement;
