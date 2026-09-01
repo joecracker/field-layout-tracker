@@ -782,6 +782,13 @@ export function initNextLevel() {
   function wallLength(w: Wall){ return dist(w.start, w.end); }
   function wallAngle(w: Wall){ return Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x); }
 
+  // Corner welding: wall endpoints sitting on the same spot are treated as a
+  // shared corner. Moving one drags the others so connected walls stay
+  // connected and their lengths recompute. (Walls store independent points,
+  // so without this a box is really 4 loose sticks.)
+  const WELD_EPS = 2;
+  function samePt(a: Point, b: Point){ return Math.abs(a.x - b.x) < WELD_EPS && Math.abs(a.y - b.y) < WELD_EPS; }
+
   function findWallAt(pos: Point, threshold?: number){
     const page=getPage(); if(!page) return -1;
     const th = threshold || SNAP;
@@ -4341,12 +4348,25 @@ export function initNextLevel() {
       selectionDragStart = pos;
       const page = getPage();
       if(page){
+        // Capture the corners of the moving walls BEFORE they move, so we can
+        // drag any connected (coincident) neighbor endpoints along with them.
+        const movingPts: Point[] = [];
+        selectedWallIndices.forEach(wi => {
+          const w = page.walls[wi];
+          if(w && !w.locked){ movingPts.push({x:w.start.x, y:w.start.y}, {x:w.end.x, y:w.end.y}); }
+        });
         selectedWallIndices.forEach(wi => {
           const w = page.walls[wi];
           if(w && !w.locked){
             w.start.x += dx; w.start.y += dy;
             w.end.x += dx; w.end.y += dy;
           }
+        });
+        // Weld: any non-selected wall endpoint on a moving corner follows.
+        page.walls.forEach((w, i) => {
+          if(selectedWallIndices.includes(i) || w.locked) return;
+          if(movingPts.some(mp => samePt(w.start, mp))){ w.start.x += dx; w.start.y += dy; }
+          if(movingPts.some(mp => samePt(w.end, mp))){ w.end.x += dx; w.end.y += dy; }
         });
         selectedAssetIds.forEach(aid => {
           const a = page.assets.find(item => item.id === aid);
@@ -4401,8 +4421,15 @@ export function initNextLevel() {
       const page=getPage(); if(!page) return;
       const w = page.walls[selectedWallIdx];
       const sx = snap(pos.x), sy = snap(pos.y);
+      const oldPt = dragHandle===0 ? { x: w.start.x, y: w.start.y } : { x: w.end.x, y: w.end.y };
       if(dragHandle===0) w.start = {x:sx,y:sy};
       else w.end = {x:sx,y:sy};
+      // Drag along any other endpoint sitting on the same corner.
+      page.walls.forEach((ow, i) => {
+        if(i===selectedWallIdx || ow.locked) return;
+        if(samePt(ow.start, oldPt)) ow.start = {x:sx,y:sy};
+        if(samePt(ow.end, oldPt)) ow.end = {x:sx,y:sy};
+      });
       recalcOpenings();
       const lenInput = document.getElementById('wall-edit-length') as HTMLInputElement;
       if (lenInput) lenInput.value = Math.round(wallLength(w)).toString();
