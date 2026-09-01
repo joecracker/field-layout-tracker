@@ -992,7 +992,7 @@ export function initNextLevel() {
     (document.getElementById('opening-edit-height') as HTMLInputElement).value = Math.round(opening.height || 36).toString();
     hWrap.style.display = type === 'door' ? 'none' : 'block';
 
-    const distVal = opening.distFromStart;
+    const distVal = Math.max(0, opening.distFromStart - opening.width / 2);
 
     (document.getElementById('opening-edit-ref') as HTMLSelectElement).value = 'left';
     (document.getElementById('opening-edit-dist') as HTMLInputElement).value = distVal.toFixed(2);
@@ -1032,11 +1032,11 @@ export function initNextLevel() {
     const w = page.walls[opening.wallIdx];
     const wallLen = wallLength(w);
     if(ref === 'left'){
-      opening.distFromStart = distVal;
+      opening.distFromStart = distVal + opening.width / 2;
     } else if(ref === 'center'){
       opening.distFromStart = distVal;
     } else if(ref === 'right'){
-      opening.distFromStart = Math.max(0, wallLen - distVal - opening.width);
+      opening.distFromStart = Math.max(0, wallLen - distVal - opening.width / 2);
     }
   }
 
@@ -1098,16 +1098,17 @@ export function initNextLevel() {
     const angle = wallAngle(w);
     const dx = Math.cos(angle), dy = Math.sin(angle);
 
-    const leftX = w.start.x + dx * (opening.distFromStart);
-    const leftY = w.start.y + dy * (opening.distFromStart);
-    const rightX = w.start.x + dx * (opening.distFromStart + opening.width);
-    const rightY = w.start.y + dy * (opening.distFromStart + opening.width);
+    const leftX = w.start.x + dx * (opening.distFromStart - opening.width/2);
+    const leftY = w.start.y + dy * (opening.distFromStart - opening.width/2);
+    const rightX = w.start.x + dx * (opening.distFromStart + opening.width/2);
+    const rightY = w.start.y + dy * (opening.distFromStart + opening.width/2);
 
     const distToLeft = fmtLen(opening.distFromStart - opening.width/2);
     const distToRight = fmtLen(wallLen - opening.distFromStart - opening.width/2);
 
+    // Both segments on the SAME side of the wall — one continuous corner→jamb→jamb→corner string.
     drawDimLine(w.start.x, w.start.y, leftX, leftY, distToLeft, 'left');
-    drawDimLine(rightX, rightY, w.end.x, w.end.y, distToRight, 'right');
+    drawDimLine(rightX, rightY, w.end.x, w.end.y, distToRight, 'left');
   }
 
   function formatInches(inches: number){
@@ -1273,13 +1274,13 @@ export function initNextLevel() {
         const pw = page2.walls[pp.wallIdx];
         const pAngle = wallAngle(pw);
         const pdx = Math.cos(pAngle), pdy = Math.sin(pAngle);
-        const pLeftX = pw.start.x + pdx * pp.distFromStart;
-        const pLeftY = pw.start.y + pdy * pp.distFromStart;
-        const pRightX = pw.start.x + pdx * (pp.distFromStart + pp.width);
-        const pRightY = pw.start.y + pdy * (pp.distFromStart + pp.width);
+        const pLeftX = pw.start.x + pdx * (pp.distFromStart - pp.width/2);
+        const pLeftY = pw.start.y + pdy * (pp.distFromStart - pp.width/2);
+        const pRightX = pw.start.x + pdx * (pp.distFromStart + pp.width/2);
+        const pRightY = pw.start.y + pdy * (pp.distFromStart + pp.width/2);
         const pWallLen = wallLength(pw);
-        drawDimLine(pw.start.x, pw.start.y, pLeftX, pLeftY, formatInches(pp.distFromStart), 'left');
-        drawDimLine(pRightX, pRightY, pw.end.x, pw.end.y, formatInches(Math.max(0, pWallLen - pp.distFromStart - pp.width)), 'right');
+        drawDimLine(pw.start.x, pw.start.y, pLeftX, pLeftY, formatInches(Math.max(0, pp.distFromStart - pp.width/2)), 'left');
+        drawDimLine(pRightX, pRightY, pw.end.x, pw.end.y, formatInches(Math.max(0, pWallLen - pp.distFromStart - pp.width/2)), 'left');
       }
     }
 
@@ -3854,9 +3855,9 @@ export function initNextLevel() {
       const wallLen = wallLength(w);
       const ref = (this as HTMLSelectElement).value;
       let distVal: number;
-      if(ref === 'left') distVal = opening.distFromStart;
+      if(ref === 'left') distVal = Math.max(0, opening.distFromStart - opening.width / 2);
       else if(ref === 'center') distVal = opening.distFromStart;
-      else distVal = Math.max(0, wallLen - opening.distFromStart - opening.width);
+      else distVal = Math.max(0, wallLen - opening.distFromStart - opening.width / 2);
       (document.getElementById('opening-edit-dist') as HTMLInputElement).value = distVal.toFixed(2);
       updateOpeningDistFt(distVal);
     });
@@ -4351,6 +4352,8 @@ export function initNextLevel() {
       placeOpeningOnWall(wi, d.distFromStart, d);
       page.doors.push(d);
       placementPreview = null;
+      selectedOpening = { type: 'door', id: d.id };
+      showOpeningEdit(d, 'door');
       pushHistory(); saveAndRender();
       setTool('select'); // one door per placement — don't keep dropping
     } else if(tool==='window'){
@@ -4370,6 +4373,8 @@ export function initNextLevel() {
       placeOpeningOnWall(wi, win.distFromStart, win);
       page.windows.push(win);
       placementPreview = null;
+      selectedOpening = { type: 'window', id: win.id };
+      showOpeningEdit(win, 'window');
       pushHistory(); saveAndRender();
       setTool('select'); // one window per placement
     } else if(tool==='place_asset'){
@@ -4563,7 +4568,7 @@ export function initNextLevel() {
           const ww = page.walls[wi];
           const cp = closestPointOnWall(pos, ww);
           const dw = tool==='door' ? doorConfig.width : windowConfig.width;
-          const dfs = clamp(dist(ww.start, cp) - dw/2, 0, Math.max(0, wallLength(ww) - dw));
+          const dfs = clamp(dist(ww.start, cp), dw/2, Math.max(dw/2, wallLength(ww) - dw/2));
           placementPreview = {
             wallIdx: wi,
             distFromStart: dfs,

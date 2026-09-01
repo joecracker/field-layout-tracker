@@ -374,10 +374,6 @@ export default function App() {
             <span id="tools-drawer-arrow">&#9660;</span>
           </button>
           <div id="tools-drawer-content" className="hidden" style={{ marginTop: '8px' }}>
-            <div className="btn-row">
-              <button id="btn-undo" className="btn btn-sm" title="Undo (Ctrl+Z)">&#8617; Undo</button>
-              <button id="btn-redo" className="btn btn-sm" title="Redo (Ctrl+Y)">&#8618; Redo</button>
-            </div>
             <div className="btn-row" style={{ marginTop: '6px' }}>
               <button id="btn-draw-wall" className="btn btn-sm btn-accent">Draw Wall (W)</button>
               <button id="btn-select" className="btn btn-sm">Select (V)</button>
