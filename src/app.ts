@@ -147,6 +147,7 @@ export function initNextLevel() {
   let dragHandle = -1; // -1 none, 0=start, 1=end
   let resizingAssetCorner = -1;     // -1 none, else 0-3 (which corner is grabbed)
   let resizeAnchorWorld: Point | null = null; // opposite corner, held fixed
+  let draggingOpening: { type: 'door' | 'window'; id: string } | null = null;
   let draggingNoteIdx = -1;
 
   // Copy/paste
@@ -4314,6 +4315,8 @@ export function initNextLevel() {
             selectedAssetIds = [];
             document.getElementById('wall-edit-panel')?.classList.add('hidden');
             selectedOpening = {type:'door', id: clickedDoor.id};
+            draggingOpening = {type:'door', id: clickedDoor.id};
+            pushHistory();
             showOpeningEdit(clickedDoor, 'door');
             render();
             return;
@@ -4326,6 +4329,8 @@ export function initNextLevel() {
             selectedAssetIds = [];
             document.getElementById('wall-edit-panel')?.classList.add('hidden');
             selectedOpening = {type:'window', id: clickedWin.id};
+            draggingOpening = {type:'window', id: clickedWin.id};
+            pushHistory();
             showOpeningEdit(clickedWin, 'window');
             render();
             return;
@@ -4410,6 +4415,32 @@ export function initNextLevel() {
   }
 
   function onCanvasMove(e: MouseEvent){
+    if(draggingOpening){
+      const pos = screenToCanvas(e.clientX, e.clientY);
+      const page = getPage();
+      if(page){
+        const list = draggingOpening.type === 'door' ? page.doors : page.windows;
+        const op = list.find(o => o.id === draggingOpening!.id);
+        if(op){
+          // Slide along the opening's own wall — or hop to a nearer wall if dragged onto one.
+          let wi = findWallAt(pos, SNAP*1.5);
+          if(wi < 0) wi = op.wallIdx;
+          const w = page.walls[wi];
+          if(w){
+            const cp = closestPointOnWall(pos, w);
+            const len = wallLength(w);
+            op.wallIdx = wi;
+            op.distFromStart = clamp(dist(w.start, cp) - op.width/2, 0, Math.max(0, len - op.width));
+            recalcOpenings();
+            const distInput = document.getElementById('opening-edit-dist') as HTMLInputElement;
+            if(distInput) distInput.value = op.distFromStart.toFixed(2);
+            updateOpeningDistFt(op.distFromStart);
+            render();
+          }
+        }
+      }
+      return;
+    }
     if(resizingAssetCorner >= 0 && resizeAnchorWorld){
       const pos = screenToCanvas(e.clientX, e.clientY);
       const page = getPage();
@@ -4571,6 +4602,13 @@ export function initNextLevel() {
   }
 
   function onCanvasUp(e: MouseEvent){
+    if(draggingOpening){
+      draggingOpening = null;
+      pushHistory();
+      save();
+      render();
+      return;
+    }
     if(resizingAssetCorner >= 0){
       resizingAssetCorner = -1;
       resizeAnchorWorld = null;
