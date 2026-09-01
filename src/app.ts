@@ -819,6 +819,34 @@ export function initNextLevel() {
     return {x:w.start.x+t*dx, y:w.start.y+t*dy};
   }
 
+  // Wall-snap + auto-orient: if an asset lands near a wall, snap its back edge
+  // flush against it and rotate it to sit against the wall (facing the room).
+  // Threshold-gated — mid-room islands/peninsulas stay free. Mutates the asset.
+  const WALL_SNAP_MARGIN = 18; // inches of slack beyond the asset's back edge
+  function snapAssetToWall(a: Asset){
+    const page = getPage(); if(!page || page.walls.length === 0) return;
+    const center = { x: a.x, y: a.y };
+    let best: { w: Wall; cp: Point } | null = null, bestD = Infinity;
+    for(const w of page.walls){
+      const cp = closestPointOnWall(center, w);
+      const d = dist(center, cp);
+      if(d < bestD){ bestD = d; best = { w, cp }; }
+    }
+    if(!best) return;
+    const hd = (a.depth || 24) / 2;
+    if(bestD > hd + WALL_SNAP_MARGIN) return; // too far → leave free
+    let nx = center.x - best.cp.x, ny = center.y - best.cp.y;
+    const nlen = Math.hypot(nx, ny);
+    if(nlen < 0.001){                          // dead-on the wall: pick a side
+      const wa = wallAngle(best.w);
+      nx = -Math.sin(wa); ny = Math.cos(wa);
+    } else { nx /= nlen; ny /= nlen; }         // room-side normal (unit)
+    const rr = Math.atan2(nx, -ny);            // back faces wall, front to room
+    a.rotation = ((rr * 180 / Math.PI) % 360 + 360) % 360;
+    a.x = best.cp.x + nx * hd;                 // back edge flush on the wall
+    a.y = best.cp.y + ny * hd;
+  }
+
   /* ════════════════════════════════════════════════════════════════
      ROOM DETECTION
      ════════════════════════════════════════════════════════════════ */
@@ -1260,11 +1288,10 @@ export function initNextLevel() {
         hasRainHead: activePreset.hasRainHead,
         hasWallHead: activePreset.hasWallHead,
       };
+      snapAssetToWall(ghostAsset);
       drawAsset(ghostAsset);
       ctx.restore();
-    }
-
-    // Pending wall
+    }    // Pending wall
     if(wallStart && mousePos && tool==='wall'){
       drawPendingWall();
     }
@@ -4315,6 +4342,7 @@ export function initNextLevel() {
         hasRainHead: activePreset.hasRainHead,
         hasWallHead: activePreset.hasWallHead,
       };
+      snapAssetToWall(newAsset);
       page.assets.push(newAsset);
       selectedAssetId = newAsset.id;
       tool = 'select';
@@ -4509,6 +4537,13 @@ export function initNextLevel() {
     if(isDraggingSelection){
       isDraggingSelection = false;
       selectionDragStart = null;
+      const page = getPage();
+      if(page){
+        selectedAssetIds.forEach(aid => {
+          const a = page.assets.find(item => item.id === aid);
+          if(a) snapAssetToWall(a);
+        });
+      }
       pushHistory();
       save();
       render();
