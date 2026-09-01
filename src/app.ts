@@ -4220,9 +4220,9 @@ export function initNextLevel() {
           selectedWallIdx = -1;
           selectedWallIndices = [];
           render();
+          showQuickActionsMenu(e.clientX, e.clientY);
         }
       }
-      showQuickActionsMenu(e.clientX, e.clientY);
     }, 500);
 
     const sx = snap(pos.x), sy = snap(pos.y);
