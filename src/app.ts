@@ -37,6 +37,7 @@ export function initNextLevel() {
     width: number;
     height?: number;
     locked?: boolean;
+    floating?: boolean;
   }
   interface Asset {
     id: string;
@@ -949,11 +950,11 @@ export function initNextLevel() {
   function recalcOpenings(){
     const page=getPage(); if(!page) return;
     [...page.doors, ...page.windows].forEach(o => {
+      if(o.floating) return; // free-dragging: x/y follow the cursor, not a wall
       if(o.wallIdx >= 0 && o.wallIdx < page.walls.length){
         const w = page.walls[o.wallIdx];
         const len = wallLength(w);
-        const t = o.distFromStart / len;
-        const clampedT = clamp(t, 0, 1);
+        const clampedT = clamp(o.distFromStart / len, 0, 1); // distFromStart = center
         o.x = lerp(w.start.x, w.end.x, clampedT);
         o.y = lerp(w.start.y, w.end.y, clampedT);
         o.angle = wallAngle(w);
@@ -1102,8 +1103,8 @@ export function initNextLevel() {
     const rightX = w.start.x + dx * (opening.distFromStart + opening.width);
     const rightY = w.start.y + dy * (opening.distFromStart + opening.width);
 
-    const distToLeft = fmtLen(opening.distFromStart);
-    const distToRight = fmtLen(wallLen - opening.distFromStart - opening.width);
+    const distToLeft = fmtLen(opening.distFromStart - opening.width/2);
+    const distToRight = fmtLen(wallLen - opening.distFromStart - opening.width/2);
 
     drawDimLine(w.start.x, w.start.y, leftX, leftY, distToLeft, 'left');
     drawDimLine(rightX, rightY, w.end.x, w.end.y, distToRight, 'right');
@@ -4267,8 +4268,8 @@ export function initNextLevel() {
       const page=getPage();
       // ── Openings FIRST (they sit on walls; the wall must not steal the tap) ──
       if(page){
-        const hitDoor = page.doors.find(d => dist(pos, {x: d.x||0, y: d.y||0}) < 22);
-        const hitWin = !hitDoor ? page.windows.find(w => dist(pos, {x: w.x||0, y: w.y||0}) < 22) : null;
+        const hitDoor = page.doors.find(d => dist(pos, {x: d.x||0, y: d.y||0}) < (d.width||32)/2 + 12);
+        const hitWin = !hitDoor ? page.windows.find(w => dist(pos, {x: w.x||0, y: w.y||0}) < (w.width||36)/2 + 12) : null;
         const hit = hitDoor || hitWin;
         if(hit){
           const type: 'door'|'window' = hitDoor ? 'door' : 'window';
@@ -4345,7 +4346,7 @@ export function initNextLevel() {
         width: doorConfig.width,
         type: doorConfig.type,
         wallIdx: wi,
-        distFromStart: clamp(dist(w.start, cp) - doorConfig.width/2, 0, Math.max(0, wallLength(w) - doorConfig.width))
+        distFromStart: clamp(dist(w.start, cp), doorConfig.width/2, Math.max(doorConfig.width/2, wallLength(w) - doorConfig.width/2))
       };
       placeOpeningOnWall(wi, d.distFromStart, d);
       page.doors.push(d);
@@ -4365,7 +4366,7 @@ export function initNextLevel() {
         wallIdx: wi,
         distFromStart: dist(w.start, cp)
       };
-      win.distFromStart = clamp(win.distFromStart, 0, Math.max(0, wallLength(w) - windowConfig.width));
+      win.distFromStart = clamp(win.distFromStart, windowConfig.width/2, Math.max(windowConfig.width/2, wallLength(w) - windowConfig.width/2));
       placeOpeningOnWall(wi, win.distFromStart, win);
       page.windows.push(win);
       placementPreview = null;
@@ -4411,22 +4412,31 @@ export function initNextLevel() {
         const list = draggingOpening.type === 'door' ? page.doors : page.windows;
         const op = list.find(o => o.id === draggingOpening!.id);
         if(op){
-          // Slide along the opening's own wall — or hop to a nearer wall if dragged onto one.
-          let wi = findWallAt(pos, SNAP*1.5);
-          if(wi < 0) wi = op.wallIdx;
-          const w = page.walls[wi];
-          if(w){
+          // Find the nearest wall by perpendicular distance.
+          let bestI = -1, bestCp: Point | null = null, bestD = Infinity;
+          page.walls.forEach((w, i) => {
             const cp = closestPointOnWall(pos, w);
+            const d = dist(pos, cp);
+            if(d < bestD){ bestD = d; bestI = i; bestCp = cp; }
+          });
+          const SNAP_TO_WALL = 45; // within ~3.75 ft of a wall → snap flush onto it
+          if(bestI >= 0 && bestCp && bestD <= SNAP_TO_WALL){
+            const w = page.walls[bestI];
             const len = wallLength(w);
-            op.wallIdx = wi;
-            op.distFromStart = clamp(dist(w.start, cp) - op.width/2, 0, Math.max(0, len - op.width));
-            openingMoved = true;
+            op.floating = false;
+            op.wallIdx = bestI;
+            op.distFromStart = clamp(dist(w.start, bestCp), op.width/2, Math.max(op.width/2, len - op.width/2));
             recalcOpenings();
             const distInput = document.getElementById('opening-edit-dist') as HTMLInputElement;
             if(distInput) distInput.value = op.distFromStart.toFixed(2);
             updateOpeningDistFt(op.distFromStart);
-            render();
+          } else {
+            // No wall near — float freely under the cursor (swing it around).
+            op.floating = true;
+            op.x = pos.x; op.y = pos.y;
           }
+          openingMoved = true;
+          render();
         }
       }
       return;
@@ -4593,6 +4603,26 @@ export function initNextLevel() {
 
   function onCanvasUp(e: MouseEvent){
     if(draggingOpening){
+      const page = getPage();
+      const list = page ? (draggingOpening.type === 'door' ? page.doors : page.windows) : [];
+      const op = list.find(o => o.id === draggingOpening!.id);
+      if(page && op && op.floating){
+        // Dropped away from a wall — glue to the nearest one (doors live on walls).
+        let bestI = -1, bestCp: Point | null = null, bestD = Infinity;
+        page.walls.forEach((w, i) => {
+          const cp = closestPointOnWall({x: op.x||0, y: op.y||0}, w);
+          const d = dist({x: op.x||0, y: op.y||0}, cp);
+          if(d < bestD){ bestD = d; bestI = i; bestCp = cp; }
+        });
+        if(bestI >= 0 && bestCp){
+          const w = page.walls[bestI];
+          const len = wallLength(w);
+          op.wallIdx = bestI;
+          op.distFromStart = clamp(dist(w.start, bestCp), op.width/2, Math.max(op.width/2, len - op.width/2));
+        }
+        op.floating = false;
+        recalcOpenings();
+      }
       draggingOpening = null;
       if(openingMoved){ pushHistory(); save(); }
       openingMoved = false;

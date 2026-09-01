@@ -240,6 +240,10 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px;
   font-size: 13px; background: #fff; color: var(--text); margin-top: 3px;
 }
+/* These panels sit on a light card, so their labels must be dark (the base
+   .calc-label is white for the dark sidebar). */
+#wall-edit-panel .calc-label,
+#opening-edit-panel .calc-label { color: var(--ink); }
 
 /* ── Wall Type Swatches ───────────────────────────── */
 .wall-swatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 8px; }
