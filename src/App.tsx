@@ -517,9 +517,11 @@ export default function App() {
             <span id="toolbar-info">New project</span>
           </div>
           <div className="toolbar-right">
+            <button id="btn-undo" className="btn btn-sm toolbar-btn" title="Undo (Ctrl+Z)">&#8634; Undo</button>
+            <button id="btn-redo" className="btn btn-sm toolbar-btn" title="Redo (Ctrl+Shift+Z)">&#8635;</button>
             <button id="btn-help" className="btn btn-sm toolbar-btn" title="How To Use Next Level">?</button>
             <span id="conn-status" className="conn-status conn-offline" title="Connection Status" style={{ fontSize: '10px', opacity: 0.6 }}>&#9679;</span>
-            <button id="btn-reset-view" className="btn btn-sm toolbar-btn" title="Reset Zoom &amp; Pan">&#8857; Reset</button>
+            <button id="btn-reset-view" className="btn btn-sm toolbar-btn" title="Recenter the view (zoom &amp; pan only — does not change your drawing)">&#8857; Recenter</button>
             <span id="toolbar-zoom">100%</span>
           </div>
         </div>

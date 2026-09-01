@@ -180,6 +180,26 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 .modal-overlay.hidden { display: none; }
+
+/* Modals sit on a light (--panel) card, but .btn/.pill default to white text
+   for the dark sidebar. Re-skin them dark-on-light inside modals so inactive
+   buttons/pills aren't invisible (white-on-white). Active/accent keep ember. */
+.modal .btn, .modal .pill {
+  background: #fff; color: var(--ink); border-color: var(--border);
+}
+.modal .btn:hover, .modal .pill:hover {
+  background: #f0eeea; border-color: var(--muted);
+}
+.modal .btn.active, .modal .pill.active,
+.modal .btn-accent {
+  background: var(--ember); color: var(--ink); border-color: var(--ember);
+}
+.modal .btn-accent:hover { background: #cf5623; border-color: #cf5623; }
+.modal .btn-danger { background: #fdecec; color: #c0392b; border-color: #f0b4b4; }
+.modal select, .modal input {
+  background: #fff; color: var(--ink); border: 1px solid var(--border);
+}
+.modal .calc-label { color: var(--ink); }
 .modal {
   background: var(--panel); border-radius: 12px; padding: 20px;
   width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto;

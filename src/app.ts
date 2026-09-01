@@ -3409,6 +3409,8 @@ export function initNextLevel() {
       toast('Asset deleted');
     });
 
+    document.getElementById('btn-undo')?.addEventListener('click', ()=>{ undo(); });
+    document.getElementById('btn-redo')?.addEventListener('click', ()=>{ redo(); });
     document.getElementById('btn-help')?.addEventListener('click', ()=>{
       document.getElementById('help-modal')?.classList.remove('hidden');
     });
@@ -3758,6 +3760,10 @@ export function initNextLevel() {
       document.getElementById('door-modal')?.classList.add('hidden');
       setTool('select');
     });
+    // Tap the dark overlay (outside the card) to cancel, like an X.
+    document.getElementById('door-modal')?.addEventListener('click', function(e){
+      if(e.target === this){ this.classList.add('hidden'); setTool('select'); }
+    });
     document.getElementById('door-modal-place')?.addEventListener('click', ()=>{
       document.getElementById('door-modal')?.classList.add('hidden');
     });
@@ -3779,6 +3785,9 @@ export function initNextLevel() {
     document.getElementById('window-modal-cancel')?.addEventListener('click', ()=>{
       document.getElementById('window-modal')?.classList.add('hidden');
       setTool('select');
+    });
+    document.getElementById('window-modal')?.addEventListener('click', function(e){
+      if(e.target === this){ this.classList.add('hidden'); setTool('select'); }
     });
     document.getElementById('window-modal-place')?.addEventListener('click', function(){
       windowConfig.width = parseInt((document.getElementById('window-width') as HTMLInputElement).value)||36;
