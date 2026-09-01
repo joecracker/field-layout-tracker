@@ -1521,16 +1521,37 @@ export function initNextLevel() {
     ctx.restore();
   }
 
+  // Rotation-aware asset geometry. Cabinets pivot around their center when
+  // drawn, so hit-testing and collision must use the ROTATED footprint —
+  // otherwise a turned cabinet's clickable/collision box stays unrotated.
+  function rotatedAssetCorners(a: Asset){
+    const w = a.width || 24, d = a.depth || 24;
+    const hw = w / 2, hd = d / 2;
+    const rot = ((a.rotation || 0) * Math.PI) / 180;
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    return [
+      { x: -hw, y: -hd }, { x: hw, y: -hd }, { x: hw, y: hd }, { x: -hw, y: hd },
+    ].map(c => ({ x: a.x + c.x * cos - c.y * sin, y: a.y + c.x * sin + c.y * cos }));
+  }
+
+  // True point-in-rotated-rectangle: bring the point into the asset's local
+  // (unrotated) frame, then a plain box check.
+  function pointInAsset(pos: Point, a: Asset){
+    const w = a.width || 24, d = a.depth || 24;
+    const rot = ((a.rotation || 0) * Math.PI) / 180;
+    const cos = Math.cos(-rot), sin = Math.sin(-rot);
+    const dx = pos.x - a.x, dy = pos.y - a.y;
+    const lx = dx * cos - dy * sin, ly = dx * sin + dy * cos;
+    return Math.abs(lx) <= w / 2 && Math.abs(ly) <= d / 2;
+  }
+
   function getAssetBoundingBox(a: Asset) {
-    const w = a.width || 24;
-    const d = a.depth || 24;
-    const hw = w / 2;
-    const hd = d / 2;
+    const c = rotatedAssetCorners(a);
     return {
-      minX: a.x - hw,
-      maxX: a.x + hw,
-      minY: a.y - hd,
-      maxY: a.y + hd
+      minX: Math.min(c[0].x, c[1].x, c[2].x, c[3].x),
+      maxX: Math.max(c[0].x, c[1].x, c[2].x, c[3].x),
+      minY: Math.min(c[0].y, c[1].y, c[2].y, c[3].y),
+      maxY: Math.max(c[0].y, c[1].y, c[2].y, c[3].y),
     };
   }
 
@@ -4095,11 +4116,7 @@ export function initNextLevel() {
       const pos = screenToCanvas(e.clientX, e.clientY);
       const page = getPage();
       if(page && page.assets) {
-        const clickedAsset = page.assets.slice().reverse().find(a => {
-          const hw = (a.width || 24) / 2 + 10;
-          const hd = (a.depth || 24) / 2 + 10;
-          return Math.abs(pos.x - a.x) <= hw && Math.abs(pos.y - a.y) <= hd;
-        });
+        const clickedAsset = page.assets.slice().reverse().find(a => pointInAsset(pos, a));
         if(clickedAsset) {
           selectedAssetId = clickedAsset.id;
           selectedAssetIds = [clickedAsset.id];
@@ -4154,11 +4171,7 @@ export function initNextLevel() {
     } else if(tool==='select'){
       const page=getPage();
       if (page && page.assets) {
-        const clickedAsset = page.assets.slice().reverse().find(a => {
-          const hw = (a.width || 24) / 2 + 6;
-          const hd = (a.depth || 24) / 2 + 6;
-          return Math.abs(pos.x - a.x) <= hw && Math.abs(pos.y - a.y) <= hd;
-        });
+        const clickedAsset = page.assets.slice().reverse().find(a => pointInAsset(pos, a));
         if (clickedAsset) {
           if (selectedAssetIds.includes(clickedAsset.id) || selectedAssetIds.length > 0 || selectedWallIndices.length > 0) {
             isDraggingSelection = true;
