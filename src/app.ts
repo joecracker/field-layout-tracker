@@ -752,7 +752,7 @@ export function initNextLevel() {
   /* ── History ──────────────────────────────────────── */
   function pushHistory(){
     const page = getPage(); if(!page) return;
-    const snapshot = JSON.stringify({ walls: page.walls, doors: page.doors, windows: page.windows });
+    const snapshot = JSON.stringify({ walls: page.walls, doors: page.doors, windows: page.windows, assets: page.assets });
     if(page.historyIdx < page.history.length - 1){
       page.history = page.history.slice(0, page.historyIdx + 1);
     }
@@ -760,10 +760,19 @@ export function initNextLevel() {
     if(page.history.length > HISTORY_MAX) page.history.shift();
     page.historyIdx = page.history.length - 1;
   }
+  // Seed the pre-action state once, so the first Undo has somewhere to go back to.
+  function seedHistoryIfEmpty(){
+    const page = getPage(); if(!page || page.history.length > 0) return;
+    page.history.push(JSON.stringify({ walls: page.walls, doors: page.doors, windows: page.windows, assets: page.assets }));
+    page.historyIdx = 0;
+  }
   function restoreSnapshot(snapStr: string){
     const page = getPage(); if(!page) return;
     const d = JSON.parse(snapStr);
-    page.walls = d.walls; page.doors = d.doors || []; page.windows = d.windows || [];
+    page.walls = d.walls; page.doors = d.doors || []; page.windows = d.windows || []; page.assets = d.assets || [];
+    // A restored state may not contain what was selected — clear to avoid ghosts.
+    selectedWallIdx = -1; selectedWallIndices = [];
+    selectedAssetId = null; selectedAssetIds = [];
   }
   function undo(){
     const page=getPage(); if(!page||page.historyIdx<=0) return;
@@ -1109,6 +1118,7 @@ export function initNextLevel() {
      DRAWING
      ════════════════════════════════════════════════════════════════ */
   function render(){
+    seedHistoryIfEmpty();
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,canvasW/dpr,canvasH/dpr);
 
@@ -4347,6 +4357,7 @@ export function initNextLevel() {
       page.doors.push(d);
       placementPreview = null;
       pushHistory(); saveAndRender();
+      setTool('select'); // one door per placement — don't keep dropping
     } else if(tool==='window'){
       const page=getPage(); if(!page) return;
       const wi = findWallAt(pos, SNAP*1.5);
@@ -4365,6 +4376,7 @@ export function initNextLevel() {
       page.windows.push(win);
       placementPreview = null;
       pushHistory(); saveAndRender();
+      setTool('select'); // one window per placement
     } else if(tool==='place_asset'){
       const page=getPage();
       if(!page || !activePreset) return;
