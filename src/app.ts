@@ -4720,6 +4720,7 @@ export function initNextLevel() {
 
   /* ── Touch ─────────────────────────────────────────── */
   let touchStartDist = 0;
+  let touchMidX = 0, touchMidY = 0;
   function onTouchStart(e: TouchEvent){
     e.preventDefault();
     if(e.touches.length === 2){
@@ -4727,6 +4728,8 @@ export function initNextLevel() {
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
+      touchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      touchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       return;
     }
     if(e.touches.length === 1){
@@ -4742,14 +4745,28 @@ export function initNextLevel() {
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
+      const newMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const newMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const rect = canvas.getBoundingClientRect();
       if(touchStartDist > 0){
         const scale = newDist / touchStartDist;
-        zoom = clamp(zoom * scale, 0.15, 5);
+        const newZoom = clamp(zoom * scale, 0.15, 5);
+        // Zoom about the pinch center (screen coords → canvas-local coords)
+        const mx = newMidX - rect.left;
+        const my = newMidY - rect.top;
+        panX = mx - (mx - panX) * (newZoom / zoom);
+        panY = my - (my - panY) * (newZoom / zoom);
+        zoom = newZoom;
         touchStartDist = newDist;
         const zoomEl = document.getElementById('toolbar-zoom');
         if (zoomEl) zoomEl.textContent = Math.round(zoom*100)+'%';
-        render();
       }
+      // Two fingers sliding together (no pinch) pans the view
+      panX += newMidX - touchMidX;
+      panY += newMidY - touchMidY;
+      touchMidX = newMidX;
+      touchMidY = newMidY;
+      render();
       return;
     }
     if(e.touches.length === 1){
