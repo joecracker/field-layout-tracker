@@ -47,7 +47,7 @@ Same value in all 4 apps. Redeploy after adding it.
 | Crackerbox Studio | `Apps/Crackerbox Studio/backups` | `crackerbox-studio-backup.json` |
 
 - The sign-in token lives only in `sessionStorage` (cleared when you close the tab) — you'll reconnect roughly once per browsing session.
-- **Not synced to Drive, on purpose:** Fantasy Draft Assistant's Gemini API key, and Crackerbox Studio's encrypted GitHub/Netlify/OpenRouter deploy tokens. Those stay local-only.
+- **Not synced to Drive, on purpose:** Fantasy Draft Assistant's AI API key, and Crackerbox Studio's encrypted GitHub/OpenRouter deploy tokens. Those stay local-only.
 
 ## 4. Without any setup at all
 
