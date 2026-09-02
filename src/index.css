@@ -241,9 +241,28 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
   font-size: 13px; background: #fff; color: var(--text); margin-top: 3px;
 }
 /* These panels sit on a light card, so their labels must be dark (the base
-   .calc-label is white for the dark sidebar). */
+   .calc-label is white for the dark sidebar). Same problem hits plain .btn
+   and .btn-danger — both styled for the dark sidebar (white text, white-ish
+   bg) and effectively invisible here. (This bit us before with .calc-label;
+   turns out .btn had the exact same issue the whole time, just harder to
+   notice since it still had a visible border.) */
 #wall-edit-panel .calc-label,
 #opening-edit-panel .calc-label { color: var(--ink); }
+
+#wall-edit-panel .btn:not(.btn-accent):not(.btn-danger),
+#opening-edit-panel .btn:not(.btn-accent):not(.btn-danger) {
+  background: rgba(0,0,0,.05); color: var(--ink); border-color: var(--border);
+}
+#wall-edit-panel .btn:not(.btn-accent):not(.btn-danger):hover,
+#opening-edit-panel .btn:not(.btn-accent):not(.btn-danger):hover {
+  background: rgba(0,0,0,.1);
+}
+#wall-edit-panel .btn-danger,
+#opening-edit-panel .btn-danger {
+  background: #fdecec; color: #c0392b; border-color: #f0b4b4;
+}
+#wall-edit-panel .btn-danger:hover,
+#opening-edit-panel .btn-danger:hover { background: #fbd5d5; }
 
 /* ── Wall Type Swatches ───────────────────────────── */
 .wall-swatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 8px; }
