@@ -748,7 +748,7 @@ export function initNextLevel() {
   }
   function newProject(name?: string, cat?: string): Project {
     return {
-      id: uid(), name: name||'New Project', customer: name||'',
+      id: uid(), name: name||'New Project', customer: '',
       category: cat||'Kitchen', scope: 'Full Build',
       pages: [newPage()], ceilingH: 96, studSpacing: 16, waste: 1.10, photos: []
     };
@@ -3074,8 +3074,7 @@ export function initNextLevel() {
   }
 
   function skipToDrawing(category: string) {
-    const stamp = new Date().toLocaleDateString([], { month: 'numeric', day: 'numeric' });
-    const p = newProject(`New ${category} — ${stamp}`, category);
+    const p = newProject(`New ${category} Project`, category);
     currentCategory = category;
     activeAssetCat = CATEGORY_ASSET_MAP[category] || 'cabinet';
 
@@ -5170,8 +5169,7 @@ export function initNextLevel() {
   // inside this closure, instead of clicking hidden DOM buttons.
   (window as any).NextLevel = {
     newJob(): string {
-      const stamp = new Date().toLocaleDateString([], { month: 'numeric', day: 'numeric' });
-      const p = newProject(stamp);
+      const p = newProject();
       projects.push(p);
       currentProjectId = p.id;
       currentPageIdx = 0;
