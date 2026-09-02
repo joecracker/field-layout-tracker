@@ -1421,11 +1421,6 @@ export function initNextLevel() {
       ctx.textBaseline = 'middle';
       ctx.fillText(fmtLen(len), mx + offsetX, my + offsetY);
     }
-    if (w.locked) {
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = '#b91c1c';
-      ctx.fillText('🔒', mx + offsetX * 1.8, my + offsetY * 1.8);
-    }
 
     ctx.restore();
   }
@@ -1545,13 +1540,6 @@ export function initNextLevel() {
       ctx.stroke();
     }
 
-    if(d.locked){
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = '#b91c1c';
-      ctx.textAlign = 'center';
-      ctx.fillText('🔒', 0, hw * 2.4);
-    }
-
     ctx.restore();
   }
 
@@ -1595,13 +1583,6 @@ export function initNextLevel() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillText((w.width||36)+'"', 0, -hh-3);
-
-    if(w.locked){
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = '#b91c1c';
-      ctx.textBaseline = 'top';
-      ctx.fillText('🔒', 0, hh + 4);
-    }
 
     ctx.restore();
   }
