@@ -2194,7 +2194,7 @@ export function initNextLevel() {
     updateDriveBackupNudge();
 
     const custInput = document.getElementById('customer-name') as HTMLInputElement;
-    if (custInput) custInput.value = p ? p.customer || p.name : '';
+    if (custInput) custInput.value = p ? (p.customer || '') : '';
     const phoneInput = document.getElementById('customer-phone') as HTMLInputElement;
     if (phoneInput) phoneInput.value = p ? p.phone || '' : '';
     const emailInput = document.getElementById('customer-email') as HTMLInputElement;
