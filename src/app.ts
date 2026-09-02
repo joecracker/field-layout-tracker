@@ -965,6 +965,12 @@ export function initNextLevel() {
 
   function deleteOpening(type: 'door' | 'window', id: string){
     const page=getPage(); if(!page) return;
+    const list = type==='door' ? page.doors : page.windows;
+    const target = list.find(o => o.id === id);
+    if(target && target.locked){
+      toast('Cannot delete locked ' + type);
+      return;
+    }
     if(type==='door') page.doors = page.doors.filter(d=>d.id!==id);
     else page.windows = page.windows.filter(w=>w.id!==id);
     pushHistory(); saveAndRender();
@@ -1003,6 +1009,8 @@ export function initNextLevel() {
     const distVal = getOpeningRefDist(opening, wallLen);
     (document.getElementById('opening-edit-dist') as HTMLInputElement).value = distVal.toFixed(2);
     updateOpeningDistFt(distVal);
+    const lockInput = document.getElementById('opening-edit-lock') as HTMLInputElement;
+    if(lockInput) lockInput.checked = !!opening.locked;
 
     panel.classList.remove('hidden');
   }
@@ -1537,6 +1545,13 @@ export function initNextLevel() {
       ctx.stroke();
     }
 
+    if(d.locked){
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#b91c1c';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔒', 0, hw * 2.4);
+    }
+
     ctx.restore();
   }
 
@@ -1580,6 +1595,13 @@ export function initNextLevel() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillText((w.width||36)+'"', 0, -hh-3);
+
+    if(w.locked){
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#b91c1c';
+      ctx.textBaseline = 'top';
+      ctx.fillText('🔒', 0, hh + 4);
+    }
 
     ctx.restore();
   }
@@ -3867,6 +3889,13 @@ export function initNextLevel() {
       if(!opening) return;
       opening.flipped = !opening.flipped;
       pushHistory(); saveAndRender();
+    });
+    document.getElementById('opening-edit-lock')?.addEventListener('change', function(e){
+      const opening = getSelectedOpening();
+      if(!opening) return;
+      opening.locked = (e.target as HTMLInputElement).checked;
+      pushHistory(); saveAndRender();
+      toast(opening.locked ? 'Locked' : 'Unlocked');
     });
     document.getElementById('opening-edit-ref')?.addEventListener('change', function(){
       const opening = getSelectedOpening();

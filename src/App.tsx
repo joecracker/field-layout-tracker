@@ -519,7 +519,7 @@ export default function App() {
             <span id="conn-status" className="conn-status conn-offline" title="Connection Status" style={{ fontSize: '10px', opacity: 0.6 }}>&#9679;</span>
             <button id="btn-reset-view" className="btn btn-sm toolbar-btn" title="Recenter the view (zoom &amp; pan only — does not change your drawing)">&#8857; Recenter</button>
             <span id="toolbar-zoom">100%</span>
-            <span id="build-stamp" style={{ fontSize: '9px', opacity: 0.4, marginLeft: '6px' }} title="Build marker — bumps every push, confirms new code is live">build-2026-09-01-c</span>
+            <span id="build-stamp" style={{ fontSize: '9px', opacity: 0.4, marginLeft: '6px' }} title="Build marker — bumps every push, confirms new code is live">build-2026-09-01-d</span>
           </div>
         </div>
         <div id="workflow-banner" style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)', padding: '6px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#334155', flexWrap: 'wrap', gap: '6px', zIndex: 5 }}>
@@ -603,7 +603,7 @@ export default function App() {
           </select>
         </label>
         <div style={{ marginTop: '8px', marginBottom: '8px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: '#cbd5e1' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: 'var(--ink)' }}>
             <input type="checkbox" id="wall-edit-lock" style={{ accentColor: 'var(--ember)', width: '14px', height: '14px', cursor: 'pointer' }} />
             <span>Lock Wall (Prevent movement & deletion)</span>
           </label>
@@ -636,6 +636,12 @@ export default function App() {
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }} id="opening-edit-dist-ft"></div>
         <div id="opening-flip-wrap" className="btn-row" style={{ marginBottom: '8px' }}>
           <button id="opening-edit-flip" className="btn btn-sm btn-block">&#8646; Flip Swing In/Out</button>
+        </div>
+        <div style={{ marginTop: '4px', marginBottom: '8px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: 'var(--ink)' }}>
+            <input type="checkbox" id="opening-edit-lock" style={{ accentColor: 'var(--ember)', width: '14px', height: '14px', cursor: 'pointer' }} />
+            <span>Lock (Prevent movement & deletion)</span>
+          </label>
         </div>
         <div className="btn-row" style={{ marginTop: '8px' }}>
           <button id="opening-edit-update" className="btn btn-sm btn-accent">Update</button>
