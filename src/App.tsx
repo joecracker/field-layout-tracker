@@ -138,10 +138,11 @@ function Launcher({ onPick }: { onPick: (door: 'new' | 'open' | 'just' | 'quick'
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '24px', boxSizing: 'border-box', overflowY: 'auto',
     }}>
-      <div style={{ fontSize: '42px', fontWeight: 500, letterSpacing: '0.5px', marginBottom: '4px' }}>
+      <div style={{ fontSize: '42px', fontWeight: 500, letterSpacing: '0.5px', marginBottom: '6px' }}>
         <span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span>
       </div>
-      <div style={{ fontSize: '12px', letterSpacing: '3px', color: 'var(--muted)', marginBottom: '40px' }}>MEASURE &middot; DESIGN &middot; DELIVER</div>
+      <div style={{ fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: 'var(--cream)', marginBottom: '12px' }}>Field &amp; Desk</div>
+      <div style={{ fontSize: '11px', letterSpacing: '3px', color: 'var(--muted)', marginBottom: '40px' }}>MEASURE &middot; DESIGN &middot; DELIVER</div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', maxWidth: '440px' }}>
         <button onClick={() => onPick('new')} style={{ ...doorBtn, border: 'none', background: 'var(--ember)', color: 'var(--ink)' }}>
@@ -286,7 +287,8 @@ export default function App() {
         <div id="app">
       <aside id="sidebar">
         <div className="sidebar-header">
-          <h2 style={{ fontSize: '26px', letterSpacing: '0.5px' }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
+          <h2 style={{ fontSize: '26px', letterSpacing: '0.5px', lineHeight: 1.1 }}><span style={{ color: 'var(--cream)' }}>Next </span><span style={{ color: 'var(--ember)' }}>Level</span></h2>
+          <div style={{ fontSize: '12px', fontWeight: 400, letterSpacing: '2.5px', color: 'var(--muted)', marginTop: '3px' }}>FIELD &amp; DESK</div>
           <span id="sidebar-close" className="sidebar-close">&times;</span>
         </div>
         <section className="sidebar-section stage-section s-capture" id="project-contact-section">
