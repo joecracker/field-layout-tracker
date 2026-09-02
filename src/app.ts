@@ -995,9 +995,12 @@ export function initNextLevel() {
     const flipWrap = document.getElementById('opening-flip-wrap');
     if(flipWrap) flipWrap.style.display = type === 'door' ? 'flex' : 'none';
 
-    const distVal = Math.max(0, opening.distFromStart - opening.width / 2);
+    const page = getPage();
+    const w = page?.walls[opening.wallIdx];
+    const wallLen = w ? wallLength(w) : 0;
 
     (document.getElementById('opening-edit-ref') as HTMLSelectElement).value = 'left';
+    const distVal = getOpeningRefDist(opening, wallLen);
     (document.getElementById('opening-edit-dist') as HTMLInputElement).value = distVal.toFixed(2);
     updateOpeningDistFt(distVal);
 
@@ -1041,6 +1044,15 @@ export function initNextLevel() {
     } else if(ref === 'right'){
       opening.distFromStart = Math.max(0, wallLen - distVal - opening.width / 2);
     }
+  }
+
+  // Inverse of applyOpeningDistFromRef — what should the Distance box show for
+  // the CURRENTLY selected ref, given the opening's true (center) distFromStart.
+  function getOpeningRefDist(opening: Opening, wallLen: number): number {
+    const ref = (document.getElementById('opening-edit-ref') as HTMLSelectElement)?.value || 'left';
+    if(ref === 'left') return Math.max(0, opening.distFromStart - opening.width / 2);
+    if(ref === 'right') return Math.max(0, wallLen - opening.distFromStart - opening.width / 2);
+    return opening.distFromStart; // center
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -3863,11 +3875,7 @@ export function initNextLevel() {
       if(!page) return;
       const w = page.walls[opening.wallIdx];
       const wallLen = wallLength(w);
-      const ref = (this as HTMLSelectElement).value;
-      let distVal: number;
-      if(ref === 'left') distVal = Math.max(0, opening.distFromStart - opening.width / 2);
-      else if(ref === 'center') distVal = opening.distFromStart;
-      else distVal = Math.max(0, wallLen - opening.distFromStart - opening.width / 2);
+      const distVal = getOpeningRefDist(opening, wallLen);
       (document.getElementById('opening-edit-dist') as HTMLInputElement).value = distVal.toFixed(2);
       updateOpeningDistFt(distVal);
     });
@@ -4443,8 +4451,9 @@ export function initNextLevel() {
             op.distFromStart = clamp(dist(w.start, bestCp), op.width/2, Math.max(op.width/2, len - op.width/2));
             recalcOpenings();
             const distInput = document.getElementById('opening-edit-dist') as HTMLInputElement;
-            if(distInput) distInput.value = op.distFromStart.toFixed(2);
-            updateOpeningDistFt(op.distFromStart);
+            const refDist = getOpeningRefDist(op, len);
+            if(distInput) distInput.value = refDist.toFixed(2);
+            updateOpeningDistFt(refDist);
           } else {
             // No wall near — float freely under the cursor (swing it around).
             op.floating = true;
